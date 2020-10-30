@@ -10,12 +10,9 @@
 
 import Foundation
 
-/// Main class for handling SDK logic
-
-public class N2StepSDK {
-
-    public static func initialize() {
-        print("N2StepSDK initialized")
-    }
-
+struct CheckinEntry: Codable {
+    let id: Int
+    let pk: String
+    let sharedKey: String
+    let ciphertext: String
 }
