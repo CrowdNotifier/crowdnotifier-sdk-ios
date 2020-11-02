@@ -11,11 +11,19 @@
 import Foundation
 
 extension Date {
+
     var millisecondsSince1970: Int {
         return Int(timeIntervalSince1970 * 1000.0)
     }
 
     init(millisecondsSince1970: Int) {
-        self.init(timeIntervalSince1970: TimeInterval(millisecondsSince1970 / 1000))
+        self.init(timeIntervalSince1970: TimeInterval(Double(millisecondsSince1970) / 1000.0))
     }
+
+    static var todayAsString: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: Date())
+    }
+
 }

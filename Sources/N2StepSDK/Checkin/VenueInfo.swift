@@ -11,6 +11,8 @@
 import Foundation
 
 public struct VenueInfo {
+    let pk: String
+    let notificationKey: String
     let name: String
     let location: String
     let defaultDuration: TimeInterval?

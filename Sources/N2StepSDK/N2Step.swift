@@ -22,19 +22,19 @@ public enum N2Step {
         instance = N2StepMain()
     }
 
-    public static func getVenueInfo(qrCodeData: QRCodeData) -> VenueInfo? {
+    public static func getVenueInfo(qrCode: String) -> VenueInfo? {
         instancePrecondition()
-        return instance.getVenueInfo(qrCodeData: qrCodeData)
+        return instance.getVenueInfo(qrCode: qrCode)
     }
 
-    public static func checkin(qrCodeData: QRCodeData, arrivalTime: Date) -> (VenueInfo, Int)? {
+    public static func checkin(qrCode: String, arrivalTime: Date) -> (VenueInfo, Int)? {
         instancePrecondition()
-        return instance.checkin(qrCodeData: qrCodeData, arrivalTime: arrivalTime)
+        return instance.checkin(qrCode: qrCode, arrivalTime: arrivalTime)
     }
 
-    public static func changeDuration(checkinId: Int, newDuration: TimeInterval) {
+    public static func changeDuration(checkinId: Int, pk: String, newDuration: TimeInterval) {
         instancePrecondition()
-        instance.changeDuration(checkinId: checkinId, newDuration: newDuration)
+        instance.changeDuration(checkinId: checkinId, pk: pk, newDuration: newDuration)
     }
 
     public static func checkForMatches(publishedSKs: [ProblematicEventInfo]) -> [ExposureEvent] {

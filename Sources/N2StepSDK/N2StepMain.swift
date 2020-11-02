@@ -12,6 +12,8 @@ import Foundation
 
 class N2StepMain {
 
+    static let defaultCheckinDuration: TimeInterval = .hour * 1
+
     private var qrCodeParser: QRCodeParser
     private let checkinStorage: CheckinStorage = .shared
 
@@ -19,48 +21,53 @@ class N2StepMain {
         qrCodeParser = QRCodeParser()
     }
 
-    func getVenueInfo(qrCodeData: QRCodeData) -> VenueInfo? {
-        return qrCodeParser.extractVenueInformation(from: qrCodeData)
+    func getVenueInfo(qrCode: String) -> VenueInfo? {
+        return qrCodeParser.extractVenueInformation(from: qrCode)
     }
 
-    func checkin(qrCodeData: QRCodeData, arrivalTime: Date) -> (VenueInfo, Int)? {
-        guard let fullInfo = qrCodeParser.extractFullInformation(from: qrCodeData) else {
+    func checkin(qrCode: String, arrivalTime: Date) -> (VenueInfo, Int)? {
+        guard let info = qrCodeParser.extractVenueInformation(from: qrCode) else {
             return nil
         }
 
         let pair = CryptoFunctions.createKeyPair()
-        let shared = CryptoFunctions.createSharedKey(key1: pair.pk, key2: fullInfo.pk)
+        let shared = CryptoFunctions.createSharedKey(key1: pair.pk, key2: info.pk)
+        let encryptedArrivalTimeAndNotificationKey = CryptoFunctions.encrypt(text: "\(arrivalTime.millisecondsSince1970)|\(info.notificationKey)", withKey: info.pk)
+        let encryptedCheckoutTime = CryptoFunctions.encrypt(text: "\(info.defaultDuration ?? N2StepMain.defaultCheckinDuration)", withKey: info.pk)
 
-        let id = checkinStorage.addCheckinEntry(pk: pair.pk, sharedKey: shared, ciphertext: CryptoFunctions.encrypt(text: "\(arrivalTime.millisecondsSince1970)|\(fullInfo.notificationKey)", withKey: fullInfo.pk))
+        let id = checkinStorage.addCheckinEntry(pk: pair.pk, sharedKey: shared, encryptedArrivalTimeAndNotificationKey: encryptedArrivalTimeAndNotificationKey, encryptedCheckoutTime: encryptedCheckoutTime)
 
-        checkinStorage.setAdditionalInfo(id: id, checkinDuration: fullInfo.venueInfo.defaultDuration ?? 0, name: fullInfo.venueInfo.name, location: fullInfo.venueInfo.location)
-
-        return (fullInfo.venueInfo, id)
+        return (info, id)
     }
 
-    func changeDuration(checkinId: Int, newDuration: TimeInterval) {
-        checkinStorage.updateCheckinDuration(id: checkinId, newCheckinDuration: newDuration)
+    func changeDuration(checkinId: Int, pk: String, newDuration: TimeInterval) {
+        checkinStorage.setCheckoutTime(id: checkinId, encryptedCheckoutTime: CryptoFunctions.encrypt(text: "\(newDuration)", withKey: pk))
     }
 
     func checkForMatches(publishedSKs: [ProblematicEventInfo]) -> [ExposureEvent] {
-        let possibleMatches = checkinStorage.entries
+        let possibleMatches = checkinStorage.checkinEntries.values
 
         var matches = [ExposureEvent]()
 
         for event in publishedSKs {
             for entry in possibleMatches {
                 if CryptoFunctions.createSharedKey(key1: entry.pk, key2: event.sk) == entry.sharedKey {
-                    let decryptedInfo = CryptoFunctions.decrypt(ciphertext: entry.ciphertext, withKey: event.sk)
+                    let decryptedInfo = CryptoFunctions.decrypt(ciphertext: entry.encryptedArrivalTimeAndNotificationKey, withKey: event.sk)
                     let parts = decryptedInfo.split(separator: "|")
                     guard let milliseconds = Int(parts[0]) else {
                         continue
                     }
 
-                    let additionalInfo = checkinStorage.additionalEntryInfo["\(entry.id)"]
-
                     let arrivalTime = Date(millisecondsSince1970: milliseconds)
                     let notificationKey = String(parts[1])
-                    matches.append(ExposureEvent(checkinId: entry.id, start: arrivalTime, duration: additionalInfo?.checkinDuration ?? 0, message: CryptoFunctions.decrypt(ciphertext: event.message, withKey: notificationKey)))
+
+                    var duration: TimeInterval = N2StepMain.defaultCheckinDuration
+                    let decryptedCheckoutTime = CryptoFunctions.decrypt(ciphertext: entry.encryptedCheckoutTime, withKey: event.sk)
+                    if let interval = TimeInterval(decryptedCheckoutTime) {
+                        duration = interval
+                    }
+
+                    matches.append(ExposureEvent(checkinId: entry.id, start: arrivalTime, duration: duration, message: CryptoFunctions.decrypt(ciphertext: event.message, withKey: notificationKey)))
                 }
             }
         }

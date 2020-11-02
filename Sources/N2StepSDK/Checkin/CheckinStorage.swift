@@ -18,55 +18,58 @@ class CheckinStorage {
 
     private init() {}
 
-    func addCheckinEntry(pk: String, sharedKey: String, ciphertext: String) -> Int {
-        var allEntries = entries
-        let nextId = allEntries.map{ $0.id }.sorted().last ?? 1
+    func addCheckinEntry(pk: String, sharedKey: String, encryptedArrivalTimeAndNotificationKey: String, encryptedCheckoutTime: String) -> Int {
+        let nextId = checkinEntries.values.map{ $0.id }.sorted().last ?? 1
 
-        let entry = CheckinEntry(id: nextId, pk: pk, sharedKey: sharedKey, ciphertext: ciphertext)
-        allEntries.append(entry)
-        entries = allEntries
+        checkinEntries["\(nextId)"] = CheckinEntry(id: nextId,
+                                                   daydate: Date.todayAsString,
+                                                   pk: pk,
+                                                   sharedKey: sharedKey,
+                                                   encryptedArrivalTimeAndNotificationKey: encryptedArrivalTimeAndNotificationKey,
+                                                   encryptedCheckoutTime: encryptedCheckoutTime)
 
         return nextId
     }
 
-    func setAdditionalInfo(id: Int, checkinDuration: TimeInterval, name: String, location: String) {
-        additionalEntryInfo["\(id)"] = AdditionalEntryInfo(id: id, checkinDuration: checkinDuration, name: name, location: location)
-    }
-
-    func updateCheckinDuration(id: Int, newCheckinDuration: TimeInterval) {
-        guard let info = additionalEntryInfo["\(id)"] else {
-            return
+    func setCheckoutTime(id: Int, encryptedCheckoutTime: String) {
+        var entry = checkinEntries["\(id)"]
+        if entry != nil {
+            entry?.updateCheckoutTime(encryptedCheckoutTime)
+            checkinEntries["\(id)"] = entry
         }
-
-        additionalEntryInfo["\(id)"] = AdditionalEntryInfo(id: id, checkinDuration: newCheckinDuration, name: info.name, location: info.location)
     }
 
     func cleanUpOldData(maxDaysToKeep: Int) {
-        // TODO
+        let allIds = checkinEntries.keys
+
+        let now = Date()
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+
+        for id in allIds {
+            if let entry = checkinEntries[id],
+               let day = formatter.date(from: entry.daydate),
+               day.addingTimeInterval(.day * Double(maxDaysToKeep)) > now {
+                continue
+            } else {
+                checkinEntries[id] = nil
+            }
+        }
     }
 
     // MARK: - Storage
 
-    private(set) var entries: [CheckinEntry] {
+    private(set) var checkinEntries: [String: CheckinEntry] {
         get {
-            return userDefaults.array(forKey: .entries) as? [CheckinEntry] ?? []
+            return userDefaults.dictionary(forKey: .checkinEntries) as? [String: CheckinEntry] ?? [:]
         }
         set {
-            userDefaults.set(newValue, forKey: .entries)
+            userDefaults.set(newValue, forKey: .checkinEntries)
         }
     }
 
-    private(set) var additionalEntryInfo: [String: AdditionalEntryInfo] {
-        get {
-            return userDefaults.dictionary(forKey: .additionalInfo) as? [String: AdditionalEntryInfo] ?? [:]
-        }
-        set {
-            userDefaults.set(newValue, forKey: .additionalInfo)
-        }
-    }
 }
 
 private extension String {
-    static let entries = "ch.ubique.n2step.entries"
-    static let additionalInfo = "ch.ubique.n2step.additionalInfo"
+    static let checkinEntries = "ch.ubique.n2step.checkinEntries"
 }

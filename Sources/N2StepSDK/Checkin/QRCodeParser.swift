@@ -12,29 +12,28 @@ import Foundation
 
 class QRCodeParser {
 
-    func extractVenueInformation(from qrCodeData: QRCodeData) -> VenueInfo? {
-        let parts = qrCodeData.data.split(separator: ",")
-        let defaultDuration: TimeInterval?
+    func extractVenueInformation(from qrCode: String) -> VenueInfo? {
+        let parts = qrCode.split(separator: ",")
 
         switch parts.count {
         case 4:
-            return VenueInfo(name: String(parts[2]), location: String(parts[3]), defaultDuration: nil)
+            return VenueInfo(pk: String(parts[0]),
+                             notificationKey: String(parts[1]),
+                             name: String(parts[2]),
+                             location: String(parts[3]),
+                             defaultDuration: nil)
+
         case 5:
-            defaultDuration = TimeInterval(parts[4])
-            return VenueInfo(name: String(parts[2]), location: String(parts[3]), defaultDuration: defaultDuration)
+            return VenueInfo(pk: String(parts[0]),
+                             notificationKey: String(parts[1]),
+                             name: String(parts[2]),
+                             location: String(parts[3]),
+                             defaultDuration: TimeInterval(parts[4]))
+
         default:
             return nil // Incorrect QR code format
+        
         }
-    }
-
-    func extractFullInformation(from qrCodeData: QRCodeData) -> FullVenueInfo? {
-        guard let venueInfo = extractVenueInformation(from: qrCodeData) else {
-            return nil
-        }
-
-        let parts = qrCodeData.data.split(separator: ",")
-
-        return FullVenueInfo(pk: String(parts[0]), notificationKey: String(parts[1]), venueInfo: venueInfo)
     }
 
 }

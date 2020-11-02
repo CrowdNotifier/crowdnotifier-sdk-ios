@@ -12,7 +12,17 @@ import Foundation
 
 struct CheckinEntry: Codable {
     let id: Int
+    let daydate: String
     let pk: String
     let sharedKey: String
-    let ciphertext: String
+    let encryptedArrivalTimeAndNotificationKey: String
+    var encryptedCheckoutTime: String
+}
+
+extension CheckinEntry {
+
+    mutating func updateCheckoutTime(_ newCheckoutTime: String) {
+        encryptedCheckoutTime = newCheckoutTime
+    }
+
 }
