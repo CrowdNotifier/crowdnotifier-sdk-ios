@@ -10,7 +10,7 @@
 
 import Foundation
 
-public struct VenueInfo {
+public struct VenueInfo: Codable {
     let pk: String
     let notificationKey: String
     let name: String
