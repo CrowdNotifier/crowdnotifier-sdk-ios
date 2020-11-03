@@ -11,9 +11,9 @@
 import Foundation
 
 public struct VenueInfo: Codable {
-    let pk: String
-    let notificationKey: String
-    let name: String
-    let location: String
-    let defaultDuration: TimeInterval?
+    public let pk: String
+    public let notificationKey: String
+    public let name: String
+    public let location: String
+    public let defaultDuration: TimeInterval?
 }

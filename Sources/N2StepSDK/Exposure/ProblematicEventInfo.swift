@@ -11,8 +11,8 @@
 import Foundation
 
 public struct ProblematicEventInfo {
-    let sk: String
-    let entry: Date
-    let exit: Date
-    let message: String
+    public let sk: String
+    public let entry: Date
+    public let exit: Date
+    public let message: String
 }

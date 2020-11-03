@@ -11,8 +11,8 @@
 import Foundation
 
 public struct ExposureEvent {
-    let checkinId: Int
-    let start: Date
-    let duration: TimeInterval
-    let message: String
+    public let checkinId: Int
+    public let start: Date
+    public let duration: TimeInterval
+    public let message: String
 }
