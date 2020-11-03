@@ -16,3 +16,9 @@ public struct ExposureEvent {
     public let duration: TimeInterval
     public let message: String
 }
+
+extension ExposureEvent: Equatable {
+    public static func == (lhs: ExposureEvent, rhs: ExposureEvent) -> Bool {
+        return lhs.checkinId == rhs.checkinId
+    }
+}
