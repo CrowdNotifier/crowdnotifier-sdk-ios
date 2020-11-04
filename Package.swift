@@ -13,9 +13,14 @@ let package = Package(
             targets: ["N2StepSDK"]
         ),
     ],
+    dependencies: [
+        .package(url: "https://github.com/jedisct1/swift-sodium.git", from: "0.8.0"),
+        .package(url: "https://github.com/apple/swift-protobuf.git", from: "1.6.0"),
+    ],
     targets: [
         .target(
-            name: "N2StepSDK"
+            name: "N2StepSDK",
+            dependencies: ["Sodium", "SwiftProtobuf"]
         ),
         .testTarget(
             name: "N2StepSDKTests",

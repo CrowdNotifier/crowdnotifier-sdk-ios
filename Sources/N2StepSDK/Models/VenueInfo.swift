@@ -10,9 +10,12 @@
 
 import Foundation
 
-struct AdditionalEntryInfo: Codable {
-    let id: Int
-    let checkinDuration: TimeInterval
-    let name: String
-    let location: String
+public struct VenueInfo: Codable {
+    public let publicKey: Data
+    public let notificationKey: Data
+    public let name: String
+    public let location: String
+    public let room: String?
+    public let venueType: N2StepVenueType
+    public let defaultDuration: TimeInterval?
 }

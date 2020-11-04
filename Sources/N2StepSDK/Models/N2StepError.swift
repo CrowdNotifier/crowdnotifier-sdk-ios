@@ -10,10 +10,7 @@
 
 import Foundation
 
-public struct VenueInfo: Codable {
-    public let pk: String
-    public let notificationKey: String
-    public let name: String
-    public let location: String
-    public let defaultDuration: TimeInterval?
+public enum N2StepError: Error, Equatable {
+    case invalidQRCode
+    case invalidSignature
 }

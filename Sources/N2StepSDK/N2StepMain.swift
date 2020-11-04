@@ -21,23 +21,27 @@ class N2StepMain {
         qrCodeParser = QRCodeParser()
     }
 
-    func getVenueInfo(qrCode: String) -> VenueInfo? {
+    func getVenueInfo(qrCode: String) -> Result<VenueInfo, N2StepError> {
         return qrCodeParser.extractVenueInformation(from: qrCode)
     }
 
-    func checkin(qrCode: String, arrivalTime: Date) -> (VenueInfo, Int)? {
-        guard let info = qrCodeParser.extractVenueInformation(from: qrCode) else {
-            return nil
+    func checkin(qrCode: String, arrivalTime: Date) -> Result<(VenueInfo, Int), N2StepError> {
+        let result = qrCodeParser.extractVenueInformation(from: qrCode)
+
+        switch result {
+        case .success(let info):
+            let pair = CryptoFunctions.createKeyPair()
+            let shared = CryptoFunctions.createSharedKey(key1: pair.pk, key2: info.publicKey.base64EncodedString())
+            let encryptedArrivalTimeAndNotificationKey = CryptoFunctions.encrypt(text: "\(arrivalTime.millisecondsSince1970)|\(info.notificationKey)", withKey: info.publicKey.base64EncodedString())
+            let encryptedCheckoutTime = CryptoFunctions.encrypt(text: "\(info.defaultDuration ?? N2StepMain.defaultCheckinDuration)", withKey: info.publicKey.base64EncodedString())
+
+            let id = checkinStorage.addCheckinEntry(pk: pair.pk, sharedKey: shared, encryptedArrivalTimeAndNotificationKey: encryptedArrivalTimeAndNotificationKey, encryptedCheckoutTime: encryptedCheckoutTime)
+
+            return .success((info, id))
+
+        case .failure(let error):
+            return .failure(error)
         }
-
-        let pair = CryptoFunctions.createKeyPair()
-        let shared = CryptoFunctions.createSharedKey(key1: pair.pk, key2: info.pk)
-        let encryptedArrivalTimeAndNotificationKey = CryptoFunctions.encrypt(text: "\(arrivalTime.millisecondsSince1970)|\(info.notificationKey)", withKey: info.pk)
-        let encryptedCheckoutTime = CryptoFunctions.encrypt(text: "\(info.defaultDuration ?? N2StepMain.defaultCheckinDuration)", withKey: info.pk)
-
-        let id = checkinStorage.addCheckinEntry(pk: pair.pk, sharedKey: shared, encryptedArrivalTimeAndNotificationKey: encryptedArrivalTimeAndNotificationKey, encryptedCheckoutTime: encryptedCheckoutTime)
-
-        return (info, id)
     }
 
     func changeDuration(checkinId: Int, pk: String, newDuration: TimeInterval) {

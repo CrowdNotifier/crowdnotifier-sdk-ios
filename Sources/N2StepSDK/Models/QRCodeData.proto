@@ -1,0 +1,16 @@
+syntax = "proto2";
+
+message QRCode {
+    required int32 version = 1;
+    required bytes publicKey = 2;
+    required string name = 3;
+    required string location = 4;
+    optional string room = 5;
+    enum VenueType {
+        OTHER = 0;
+        RESTAURANT = 1;
+    };
+    required VenueType venueType = 6;
+    required bytes notificationKey = 7;
+    required bytes signature = 8;
+}

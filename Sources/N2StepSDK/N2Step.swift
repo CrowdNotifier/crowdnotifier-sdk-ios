@@ -22,12 +22,12 @@ public enum N2Step {
         instance = N2StepMain()
     }
 
-    public static func getVenueInfo(qrCode: String) -> VenueInfo? {
+    public static func getVenueInfo(qrCode: String) -> Result<VenueInfo, N2StepError> {
         instancePrecondition()
         return instance.getVenueInfo(qrCode: qrCode)
     }
 
-    public static func checkin(qrCode: String, arrivalTime: Date) -> (VenueInfo, Int)? {
+    public static func checkin(qrCode: String, arrivalTime: Date) -> Result<(VenueInfo, Int), N2StepError> {
         instancePrecondition()
         return instance.checkin(qrCode: qrCode, arrivalTime: arrivalTime)
     }
