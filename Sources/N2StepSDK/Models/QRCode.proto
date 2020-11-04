@@ -1,6 +1,12 @@
 syntax = "proto2";
 
-message QRCode {
+message QRCodeWrapper {
+    required int32 version = 1;
+    required QRCodeContent content = 2;
+    required bytes signature = 3;
+}
+
+message QRCodeContent {
     required int32 version = 1;
     required bytes publicKey = 2;
     required string name = 3;
@@ -12,5 +18,4 @@ message QRCode {
     };
     required VenueType venueType = 6;
     required bytes notificationKey = 7;
-    required bytes signature = 8;
 }

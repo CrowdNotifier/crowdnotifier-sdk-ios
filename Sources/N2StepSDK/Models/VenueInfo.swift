@@ -11,11 +11,26 @@
 import Foundation
 
 public struct VenueInfo: Codable {
+
+    public enum VenueType: String, Codable {
+        case other = "OTHER"
+        case restaurant = "RESTAURANT"
+    }
+
     public let publicKey: Data
     public let notificationKey: Data
     public let name: String
     public let location: String
     public let room: String?
-    public let venueType: N2StepVenueType
+    public let venueType: VenueInfo.VenueType
     public let defaultDuration: TimeInterval?
+}
+
+extension VenueInfo.VenueType {
+    static func fromVenueType(_ type: QRCodeContent.VenueType) -> VenueInfo.VenueType {
+        switch type {
+        case .restaurant: return .restaurant
+        case .other: return .other
+        }
+    }
 }

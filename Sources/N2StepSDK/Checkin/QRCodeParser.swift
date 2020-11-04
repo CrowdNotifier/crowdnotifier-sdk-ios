@@ -26,7 +26,7 @@ class QRCodeParser {
             return .failure(.invalidQRCode)
         }
 
-        guard let code = try? QRCode(serializedData: Data(decoded)) else {
+        guard let code = (try? QRCodeWrapper(serializedData: Data(decoded)))?.content else {
             print("Could not create code from data")
             return .failure(.invalidQRCode)
         }
