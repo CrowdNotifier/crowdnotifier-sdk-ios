@@ -14,8 +14,8 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/jedisct1/swift-sodium.git", from: "0.8.0"),
-        .package(url: "https://github.com/apple/swift-protobuf.git", from: "1.6.0"),
+        .package(url: "https://github.com/jedisct1/swift-sodium.git", .revision("0.8.0")),
+        .package(url: "https://github.com/apple/swift-protobuf.git", .revision("1.13.0")),
     ],
     targets: [
         .target(
