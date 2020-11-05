@@ -90,7 +90,7 @@ class N2StepMain {
 
                 if shared == entry.h {
                     // We have a potential match!
-                    if let payload = CryptoFunctions.decryptPayload(ciphertext: entry.ctxt, privateKey: event.privateKey, publicKey: shared) {
+                    if let payload = CryptoFunctions.decryptPayload(ciphertext: entry.ctxt, privateKey: event.privateKey) {
                         let arrival = payload.arrivalTime.millisecondsSince1970
                         let departure = payload.departureTime.millisecondsSince1970
                         // Check if times actually overlap
