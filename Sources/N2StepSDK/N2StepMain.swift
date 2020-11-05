@@ -80,17 +80,17 @@ class N2StepMain {
     }
 
     func checkForMatches(publishedSKs: [ProblematicEventInfo]) -> [ExposureEvent] {
-        let possibleMatches = checkinStorage.checkinEntries.values
+        let possibleMatches = checkinStorage.allEntries.values
 
         var matches = [ExposureEvent]()
 
         for event in publishedSKs {
             for entry in possibleMatches {
-                let shared = CryptoFunctions.computeSharedKey(privateKey: event.privateKey, publicKey: entry.epk)
+                let shared = CryptoFunctions.computeSharedKey(privateKey: event.privateKey, publicKey: entry.epk.bytes)
 
-                if shared == entry.h {
+                if shared == entry.h.bytes {
                     // We have a potential match!
-                    if let payload = CryptoFunctions.decryptPayload(ciphertext: entry.ctxt, privateKey: event.privateKey) {
+                    if let payload = CryptoFunctions.decryptPayload(ciphertext: entry.ctxt.bytes, privateKey: event.privateKey) {
                         let arrival = payload.arrivalTime.millisecondsSince1970
                         let departure = payload.departureTime.millisecondsSince1970
                         // Check if times actually overlap

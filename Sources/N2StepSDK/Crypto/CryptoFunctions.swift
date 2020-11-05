@@ -33,7 +33,7 @@ class CryptoFunctions {
     }
 
     static func encryptVenuePayload(from checkinPayload: CheckinPayload, pk: Bytes) -> Bytes? {
-        guard let m = try? JSONSerialization.data(withJSONObject: checkinPayload, options: []) else {
+        guard let m = try? JSONEncoder().encode(checkinPayload) else {
             return nil
         }
 
@@ -59,7 +59,7 @@ class CryptoFunctions {
         crypto_scalarmult_curve25519_base(&publicKey, privateKey)
 
         if let data = sodium.box.open(anonymousCipherText: ciphertext, recipientPublicKey: publicKey, recipientSecretKey: privateKey)?.data {
-            return try? JSONSerialization.jsonObject(with: data, options: []) as? CheckinPayload
+            return try? JSONDecoder().decode(CheckinPayload.self, from: data)
         }
 
         return nil

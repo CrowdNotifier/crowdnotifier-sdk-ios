@@ -16,4 +16,11 @@ public struct ProblematicEventInfo {
     public let entry: Date
     public let exit: Date
     public let message: Bytes
+
+    public init(privateKey: Bytes, entry: Date, exit: Date, message: Bytes) {
+        self.privateKey = privateKey
+        self.entry = entry
+        self.exit = exit
+        self.message = message
+    }
 }

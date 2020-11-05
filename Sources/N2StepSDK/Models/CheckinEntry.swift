@@ -14,9 +14,9 @@ import Sodium
 struct CheckinEntry: Codable {
     let id: String
     let daysSince1970: Int
-    let epk: Bytes
-    let h: Bytes
-    let ctxt: Bytes
+    let epk: Data
+    let h: Data
+    let ctxt: Data
 }
 
 struct CheckinPayload: Codable {
