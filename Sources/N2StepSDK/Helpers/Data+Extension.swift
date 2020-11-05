@@ -9,7 +9,14 @@
  */
 
 import Foundation
-import Sodium
+
+public typealias Bytes = Array<UInt8>
+
+extension Bytes {
+    init(count: Int) {
+        self.init(repeating: 0, count: count)
+    }
+}
 
 extension Data {
     var bytes: Bytes {

@@ -9,12 +9,9 @@
  */
 
 import Foundation
-import Sodium
 import Clibsodium
 
 class QRCodeParser {
-
-    private let sodium = Sodium()
 
     func extractVenueInformation(from qrCode: String) -> Result<VenueInfo, N2StepError> {
         guard let url = URL(string: qrCode) else {
@@ -22,12 +19,12 @@ class QRCodeParser {
             return .failure(.invalidQRCode)
         }
 
-        guard let fragment = url.fragment, let decoded = sodium.utils.base642bin(fragment, variant: .URLSAFE_NO_PADDING) else {
+        guard let fragment = url.fragment, let decoded = base642bin(fragment) else {
             print("Could not create data from fragment of url: \(url.absoluteString)")
             return .failure(.invalidQRCode)
         }
 
-        guard let wrapper = try? QRCodeWrapper(serializedData: Data(decoded)) else {
+        guard let wrapper = try? QRCodeWrapper(serializedData: decoded.data) else {
             print("Could not create code from data")
             return .failure(.invalidQRCode)
         }
@@ -37,7 +34,7 @@ class QRCodeParser {
         let pk = wrapper.content.publicKey.bytes
         var message = (try? wrapper.content.serializedData())?.bytes ?? []
 
-        let result = Clibsodium.crypto_sign_ed25519_verify_detached(signature, &message, UInt64(message.count), pk)
+        let result = crypto_sign_ed25519_verify_detached(signature, &message, UInt64(message.count), pk)
 
         guard result == 0 else {
             return .failure(.invalidSignature)
@@ -55,4 +52,32 @@ class QRCodeParser {
         return .success(info)
     }
 
+}
+
+fileprivate func base642bin(_ b64: String, ignore: String? = nil) -> Bytes? {
+    let b64Bytes = Bytes(b64.utf8).map(Int8.init)
+    let b64BytesLen = b64Bytes.count
+    let binBytesCapacity = b64BytesLen * 3 / 4 + 1
+    var binBytes = Bytes(count: binBytesCapacity)
+    var binBytesLen: size_t = 0
+    let ignore_nsstr = ignore.flatMap({ NSString(string: $0) })
+    let ignore_cstr = ignore_nsstr?.cString(using: String.Encoding.isoLatin1.rawValue)
+
+    let result = sodium_base642bin(&binBytes, binBytesCapacity, b64Bytes, b64BytesLen, ignore_cstr, &binBytesLen, nil, sodium_base64_VARIANT_URLSAFE_NO_PADDING)
+
+    guard result == 0 else {
+        return nil
+    }
+
+    binBytes = binBytes[..<binBytesLen].bytes
+
+    return binBytes
+}
+
+extension ArraySlice where Element == UInt8 {
+    var bytes: Bytes { return Bytes(self) }
+}
+
+extension String {
+    var bytes: Bytes { return Bytes(self.utf8) }
 }

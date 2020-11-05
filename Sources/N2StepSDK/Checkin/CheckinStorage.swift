@@ -9,7 +9,6 @@
  */
 
 import Foundation
-import Sodium
 
 class CheckinStorage {
 
@@ -19,15 +18,16 @@ class CheckinStorage {
 
     private init() {}
 
-    func addCheckinEntry(epk: Bytes, h: Bytes, ctxt: Bytes, overrideEntryWithID: String? = nil) -> String {
+    func addCheckinEntry(arrivalTime: Date, epk: Bytes, h: Bytes, ctxt: Bytes, overrideEntryWithID: String? = nil) -> String {
 
         if let overrideId = overrideEntryWithID {
-            checkinEntries[overrideId] = CheckinEntry(id: overrideId, daysSince1970: Date().daysSince1970, epk: epk, h: h, ctxt: ctxt)
+            let e = CheckinEntry(id: overrideId, daysSince1970: arrivalTime.daysSince1970, epk: Data(epk), h: Data(h), ctxt: Data(ctxt))
+            checkinEntries[overrideId] = try? JSONEncoder().encode(e)
             return overrideId
         } else {
             let id = UUID().uuidString
-
-            checkinEntries[id] = CheckinEntry(id: id, daysSince1970: Date().daysSince1970, epk: epk, h: h, ctxt: ctxt)
+            let e = CheckinEntry(id: id, daysSince1970: arrivalTime.daysSince1970, epk: Data(epk), h: Data(h), ctxt: Data(ctxt))
+            checkinEntries[id] = try? JSONEncoder().encode(e)
             return id
         }
     }
@@ -35,10 +35,15 @@ class CheckinStorage {
     func cleanUpOldData(maxDaysToKeep: Int) {
         let allIds = checkinEntries.keys
 
+        guard maxDaysToKeep > 0 else {
+            checkinEntries = [:]
+            return
+        }
+
         let daysLimit = Date().daysSince1970 - maxDaysToKeep
 
         for id in allIds {
-            if let entry = checkinEntries[id], entry.daysSince1970 >= daysLimit {
+            if let data = checkinEntries[id], let entry = try? JSONDecoder().decode(CheckinEntry.self, from: data), entry.daysSince1970 >= daysLimit {
                 continue
             } else {
                 checkinEntries[id] = nil
@@ -48,13 +53,23 @@ class CheckinStorage {
 
     // MARK: - Storage
 
-    private(set) var checkinEntries: [String: CheckinEntry] {
+    private(set) var checkinEntries: [String: Data] {
         get {
-            return userDefaults.dictionary(forKey: .checkinEntries) as? [String: CheckinEntry] ?? [:]
+            return userDefaults.dictionary(forKey: .checkinEntries) as? [String: Data] ?? [:]
         }
         set {
             userDefaults.set(newValue, forKey: .checkinEntries)
         }
+    }
+
+    var allEntries: [String: CheckinEntry] {
+        var result = [String: CheckinEntry]()
+
+        for (k, v) in checkinEntries {
+            result[k] = try? JSONDecoder().decode(CheckinEntry.self, from: v)
+        }
+
+        return result
     }
 
 }
