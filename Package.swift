@@ -10,16 +10,20 @@ let package = Package(
     products: [
         .library(
             name: "N2StepSDK",
-            targets: ["N2StepSDK"]
+            targets: ["N2StepSDK", "Clibsodium"]
         ),
     ],
     dependencies: [
-        .package(name: "SwiftProtobuf", url: "https://github.com/apple/swift-protobuf.git", .revision("1.13.0")),
+        .package(
+            name: "SwiftProtobuf",
+            url: "https://github.com/apple/swift-protobuf.git",
+            .revision("1.13.0")
+        ),
     ],
     targets: [
         .target(
             name: "N2StepSDK",
-            dependencies: ["Clibsodium", "SwiftProtobuf"]
+            dependencies: ["SwiftProtobuf"]
         ),
         .binaryTarget(
             name: "Clibsodium",
