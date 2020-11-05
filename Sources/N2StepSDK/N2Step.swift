@@ -27,14 +27,14 @@ public enum N2Step {
         return instance.getVenueInfo(qrCode: qrCode)
     }
 
-    public static func checkin(qrCode: String, arrivalTime: Date) -> Result<(VenueInfo, Int), N2StepError> {
+    public static func addCheckin(qrCode: String, arrivalTime: Date, departureTime: Date) -> Result<(VenueInfo, String), N2StepError> {
         instancePrecondition()
-        return instance.checkin(qrCode: qrCode, arrivalTime: arrivalTime)
+        return instance.addCheckin(qrCode: qrCode, arrivalTime: arrivalTime, departureTime: departureTime)
     }
 
-    public static func changeDuration(checkinId: Int, pk: String, newDuration: TimeInterval) {
+    public static func updateCheckin(checkinId: String, qrCode: String, newArrivalTime: Date, newDepartureTime: Date) -> Result<(VenueInfo, String), N2StepError> {
         instancePrecondition()
-        instance.changeDuration(checkinId: checkinId, pk: pk, newDuration: newDuration)
+        return instance.updateCheckin(checkinId: checkinId, qrCode: qrCode, newArrivalTime: newArrivalTime, newDepartureTime: newDepartureTime)
     }
 
     public static func checkForMatches(publishedSKs: [ProblematicEventInfo]) -> [ExposureEvent] {

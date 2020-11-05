@@ -11,16 +11,14 @@
 import Foundation
 import Sodium
 
-struct CheckinEntry: Codable {
-    let id: String
-    let daysSince1970: Int
-    let epk: Bytes
-    let h: Bytes
-    let ctxt: Bytes
+extension Data {
+    var bytes: Bytes {
+        return Bytes(self)
+    }
 }
 
-struct CheckinPayload: Codable {
-    let arrivalTime: Date
-    let departureTime: Date
-    let notificationKey: Data
+extension Array where Element == UInt8 {
+    var data: Data {
+        return Data(self)
+    }
 }

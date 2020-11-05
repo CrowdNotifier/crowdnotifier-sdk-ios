@@ -9,6 +9,7 @@
  */
 
 import Foundation
+import Sodium
 
 class CheckinStorage {
 
@@ -18,38 +19,26 @@ class CheckinStorage {
 
     private init() {}
 
-    func addCheckinEntry(pk: String, sharedKey: String, encryptedArrivalTimeAndNotificationKey: String, encryptedCheckoutTime: String) -> Int {
-        let nextId = checkinEntries.values.map{ $0.id }.sorted().last ?? 1
+    func addCheckinEntry(epk: Bytes, h: Bytes, ctxt: Bytes, overrideEntryWithID: String? = nil) -> String {
 
-        checkinEntries["\(nextId)"] = CheckinEntry(id: nextId,
-                                                   daydate: Date.todayAsString,
-                                                   pk: pk,
-                                                   sharedKey: sharedKey,
-                                                   encryptedArrivalTimeAndNotificationKey: encryptedArrivalTimeAndNotificationKey,
-                                                   encryptedCheckoutTime: encryptedCheckoutTime)
+        if let overrideId = overrideEntryWithID {
+            checkinEntries[overrideId] = CheckinEntry(id: overrideId, daysSince1970: Date().daysSince1970, epk: epk, h: h, ctxt: ctxt)
+            return overrideId
+        } else {
+            let id = UUID().uuidString
 
-        return nextId
-    }
-
-    func setCheckoutTime(id: Int, encryptedCheckoutTime: String) {
-        var entry = checkinEntries["\(id)"]
-        if entry != nil {
-            entry?.updateCheckoutTime(encryptedCheckoutTime)
-            checkinEntries["\(id)"] = entry
+            checkinEntries[id] = CheckinEntry(id: id, daysSince1970: Date().daysSince1970, epk: epk, h: h, ctxt: ctxt)
+            return id
         }
     }
 
     func cleanUpOldData(maxDaysToKeep: Int) {
         let allIds = checkinEntries.keys
 
-        let now = Date()
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
+        let daysLimit = Date().daysSince1970 - maxDaysToKeep
 
         for id in allIds {
-            if let entry = checkinEntries[id],
-               let day = formatter.date(from: entry.daydate),
-               day.addingTimeInterval(.day * Double(maxDaysToKeep)) > now {
+            if let entry = checkinEntries[id], entry.daysSince1970 >= daysLimit {
                 continue
             } else {
                 checkinEntries[id] = nil

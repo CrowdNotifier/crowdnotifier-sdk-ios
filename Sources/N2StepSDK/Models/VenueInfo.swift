@@ -23,7 +23,6 @@ public struct VenueInfo: Codable {
     public let location: String
     public let room: String?
     public let venueType: VenueInfo.VenueType
-    public let defaultDuration: TimeInterval?
 }
 
 extension VenueInfo.VenueType {

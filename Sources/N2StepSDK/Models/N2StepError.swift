@@ -13,4 +13,5 @@ import Foundation
 public enum N2StepError: Error, Equatable {
     case invalidQRCode
     case invalidSignature
+    case encryptionError
 }

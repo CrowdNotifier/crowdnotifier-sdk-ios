@@ -20,10 +20,8 @@ extension Date {
         self.init(timeIntervalSince1970: TimeInterval(Double(millisecondsSince1970) / 1000.0))
     }
 
-    static var todayAsString: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: Date())
+    var daysSince1970: Int {
+        return Int(self.timeIntervalSince1970 / .day)
     }
 
 }

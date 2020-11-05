@@ -10,6 +10,7 @@
 
 import Foundation
 import Sodium
+import Clibsodium
 
 class QRCodeParser {
 
@@ -21,30 +22,35 @@ class QRCodeParser {
             return .failure(.invalidQRCode)
         }
 
-        guard let fragment = url.fragment, let decoded = sodium.utils.base642bin(fragment, variant: .URLSAFE_NO_PADDING, ignore: "\n") else {
+        guard let fragment = url.fragment, let decoded = sodium.utils.base642bin(fragment, variant: .URLSAFE_NO_PADDING) else {
             print("Could not create data from fragment of url: \(url.absoluteString)")
             return .failure(.invalidQRCode)
         }
 
-        guard let code = (try? QRCodeWrapper(serializedData: Data(decoded)))?.content else {
+        guard let wrapper = try? QRCodeWrapper(serializedData: Data(decoded)) else {
             print("Could not create code from data")
             return .failure(.invalidQRCode)
         }
 
-        // TODO: Validate signature
-        let isValidSignature = true
+        // Verify signature
+        let signature = wrapper.signature.bytes
+        let pk = wrapper.content.publicKey.bytes
+        var message = (try? wrapper.content.serializedData())?.bytes ?? []
 
-        guard isValidSignature else {
+        let result = Clibsodium.crypto_sign_ed25519_verify_detached(signature, &message, UInt64(message.count), pk)
+
+        guard result == 0 else {
             return .failure(.invalidSignature)
         }
+
+        let code = wrapper.content
 
         let info = VenueInfo(publicKey: code.publicKey,
                          notificationKey: code.notificationKey,
                          name: code.name,
                          location: code.location,
                          room: code.hasRoom ? code.room : nil,
-                         venueType: .fromVenueType(code.venueType),
-                         defaultDuration: nil)
+                         venueType: .fromVenueType(code.venueType))
 
         return .success(info)
     }

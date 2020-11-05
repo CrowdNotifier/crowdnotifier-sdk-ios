@@ -10,30 +10,33 @@
 
 import Foundation
 import Sodium
+import Clibsodium
 
 class CryptoFunctions {
 
-    static func createKeyPair() -> (sk: String, pk: String) {
-        return (String.random(length: 15), String.random(length: 15))
+    private static let sodium = Sodium()
+
+    static func createPublicAndSharedKey() -> (publicKey: Bytes, sharedKey: Bytes) {
+        let esk = sodium.randomBytes.buf(length: 32)!
+
+        var epk = Bytes(repeating: 0, count: 32)
+        Clibsodium.crypto_scalarmult_ed25519_base(&epk, esk)
+
+        var h = Bytes(repeating: 0, count: 32)
+        _ = Clibsodium.crypto_scalarmult_ed25519(&h, esk, epk)
+
+        return (epk, h)
     }
 
-    static func createSharedKey(key1: String, key2: String) -> String {
-        return key1 + key2
+    static func encryptVenuePayload(from checkinPayload: CheckinPayload, pk: Bytes) -> Bytes? {
+        var pk_curve25519 = Bytes(repeating: 0, count: 32)
+        _ = Clibsodium.crypto_sign_ed25519_pk_to_curve25519(&pk_curve25519, pk)
+
+        guard let m = try? JSONSerialization.data(withJSONObject: checkinPayload, options: []) else {
+            return nil
+        }
+
+        return sodium.box.seal(message: m.bytes, recipientPublicKey: pk_curve25519)
     }
 
-    static func encrypt(text: String, withKey key: String) -> String {
-        return text
-    }
-
-    static func decrypt(ciphertext: String, withKey key: String) -> String {
-        return ciphertext
-    }
-
-}
-
-extension String {
-    static func random(length: Int) -> String {
-        let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-        return String((0..<length).map{ _ in letters.randomElement()! })
-    }
 }
