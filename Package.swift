@@ -20,7 +20,7 @@ let package = Package(
     targets: [
         .target(
             name: "N2StepSDK",
-            dependencies: ["Sodium", "SwiftProtobuf"]
+            dependencies: ["Sodium", "Clibsodium", "SwiftProtobuf"]
         ),
         .testTarget(
             name: "N2StepSDKTests",
