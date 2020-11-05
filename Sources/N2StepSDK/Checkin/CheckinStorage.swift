@@ -19,15 +19,15 @@ class CheckinStorage {
 
     private init() {}
 
-    func addCheckinEntry(epk: Bytes, h: Bytes, ctxt: Bytes, overrideEntryWithID: String? = nil) -> String {
+    func addCheckinEntry(arrivalTime: Date, epk: Bytes, h: Bytes, ctxt: Bytes, overrideEntryWithID: String? = nil) -> String {
 
         if let overrideId = overrideEntryWithID {
-            checkinEntries[overrideId] = CheckinEntry(id: overrideId, daysSince1970: Date().daysSince1970, epk: epk, h: h, ctxt: ctxt)
+            checkinEntries[overrideId] = CheckinEntry(id: overrideId, daysSince1970: arrivalTime.daysSince1970, epk: epk, h: h, ctxt: ctxt)
             return overrideId
         } else {
             let id = UUID().uuidString
 
-            checkinEntries[id] = CheckinEntry(id: id, daysSince1970: Date().daysSince1970, epk: epk, h: h, ctxt: ctxt)
+            checkinEntries[id] = CheckinEntry(id: id, daysSince1970: arrivalTime.daysSince1970, epk: epk, h: h, ctxt: ctxt)
             return id
         }
     }

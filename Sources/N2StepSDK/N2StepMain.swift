@@ -43,7 +43,7 @@ class N2StepMain {
                 return .failure(.encryptionError)
             }
             // 6. Store day, epk, h, ctxt
-            let id = checkinStorage.addCheckinEntry(epk: epk, h: h, ctxt: ctxt)
+            let id = checkinStorage.addCheckinEntry(arrivalTime: arrivalTime, epk: epk, h: h, ctxt: ctxt)
 
             return .success((venueInfo, id))
         case .failure(let error):
@@ -71,7 +71,7 @@ class N2StepMain {
                 return .failure(.encryptionError)
             }
             // 6. Store day, epk, h, ctxt
-            let id = checkinStorage.addCheckinEntry(epk: epk, h: h, ctxt: ctxt, overrideEntryWithID: checkinId)
+            let id = checkinStorage.addCheckinEntry(arrivalTime: newArrivalTime, epk: epk, h: h, ctxt: ctxt, overrideEntryWithID: checkinId)
 
             return .success((venueInfo, id))
         case .failure(let error):
@@ -86,7 +86,20 @@ class N2StepMain {
 
         for event in publishedSKs {
             for entry in possibleMatches {
+                let shared = CryptoFunctions.computeSharedKey(privateKey: event.privateKey, publicKey: entry.epk)
 
+                if shared == entry.h {
+                    // We have a potential match!
+                    if let payload = CryptoFunctions.decryptPayload(ciphertext: entry.ctxt, privateKey: event.privateKey, publicKey: shared) {
+                        let arrival = payload.arrivalTime.millisecondsSince1970
+                        let departure = payload.departureTime.millisecondsSince1970
+                        // Check if times actually overlap
+                        if (arrival <= event.exit.millisecondsSince1970 && departure >= event.entry.millisecondsSince1970) {
+                            matches.append(ExposureEvent(checkinId: entry.id, arrivalTime: payload.arrivalTime, departureTime: payload.departureTime, message: "Match!"))
+                            break
+                        }
+                    }
+                }
             }
         }
         

@@ -9,10 +9,11 @@
  */
 
 import Foundation
+import Sodium
 
 public struct ProblematicEventInfo {
-    public let sk: String
+    public let privateKey: Bytes
     public let entry: Date
     public let exit: Date
-    public let message: String
+    public let message: Bytes
 }

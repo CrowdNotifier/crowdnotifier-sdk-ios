@@ -11,14 +11,14 @@
 import Foundation
 
 public struct ExposureEvent {
-    public let checkinId: Int
-    public let start: Date
-    public let duration: TimeInterval
+    public let checkinId: String
+    public let arrivalTime: Date
+    public let departureTime: Date
     public let message: String
 }
 
 extension ExposureEvent: Equatable {
-    public static func == (lhs: ExposureEvent, rhs: ExposureEvent) -> Bool {
+    public static func ==(_ lhs: ExposureEvent, _ rhs: ExposureEvent) -> Bool {
         return lhs.checkinId == rhs.checkinId
     }
 }
