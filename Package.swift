@@ -14,14 +14,16 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(name: "Sodium", url: "https://github.com/UbiqueInnovation/swift-sodium.git", .branch("feature/full-libsodium")),
         .package(name: "SwiftProtobuf", url: "https://github.com/apple/swift-protobuf.git", .revision("1.13.0")),
     ],
     targets: [
         .target(
             name: "N2StepSDK",
-            dependencies: [.product(name: "Clibsodium", package: "Sodium"), "Sodium", "SwiftProtobuf"]
+            dependencies: ["Clibsodium", "SwiftProtobuf"]
         ),
+        .binaryTarget(
+            name: "Clibsodium",
+            path: "Clibsodium.xcframework"),
         .testTarget(
             name: "N2StepSDKTests",
             dependencies: ["N2StepSDK"]
