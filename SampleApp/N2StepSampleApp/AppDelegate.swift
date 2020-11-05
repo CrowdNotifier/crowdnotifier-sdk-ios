@@ -12,7 +12,7 @@ import N2StepSDK
 import UIKit
 
 func initializeSDK() {
-    N2StepSDK.initialize()
+    N2Step.initialize()
 }
 
 @UIApplicationMain
