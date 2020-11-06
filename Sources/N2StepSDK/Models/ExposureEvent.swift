@@ -10,7 +10,7 @@
 
 import Foundation
 
-public struct ExposureEvent {
+public struct ExposureEvent : Codable {
     public let checkinId: String
     public let arrivalTime: Date
     public let departureTime: Date
