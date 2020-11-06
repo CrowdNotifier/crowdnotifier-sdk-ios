@@ -9,7 +9,6 @@
  */
 
 import Foundation
-import Sodium
 
 class CheckinStorage {
 

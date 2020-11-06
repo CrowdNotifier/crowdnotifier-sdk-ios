@@ -18,8 +18,8 @@ class N2StepSDKTests: XCTestCase {
 
     private let storage: CheckinStorage = .shared
 
-    private let qrCode = "https://qr-dev.n2s.ch/#CAESZAgBEiCWQ0LXsHjbnla8aVOc6O-Knrfagwzp0Hl6dpwIVfS2dBoKSG9tZW9mZmljZSIHWnVoYXVzZSoFQsO8cm8wADogyskrsZvBYlhoGLASXeEOecXRWrzeaAp7bkHQYB2zYK4aQNuzu3wLJ8uMggO1nQ3bdwq3rlrav-V33aY-QQ3HIhZUd5K0cy9j1A3zgHNKr3b_0T34rSvemvKiBoWCvbavkA8"
-    private let wrongQrCode = "https://qr-dev.n2s.ch/#CAESZAgBEiCWQ0LXsHjbnla8aVOc6O-nrfagwzp0Hl6dpwIVfS2dBoKSG9tZW9mZmljZSIHWnVoYXVzZSoFQsO8cm8wADogyskrsZvBYlhoGLASXeEOecXRWrzeaAp7bkHQYB2zYK4aQNuzu3wLJ8uMggO1nQ3bdwq3rlrav-V33aY-QQ3HIhZUd5K0cy9j1A3zgHNKr3b_0T34rSvemvKiBoWCvbavkA8"
+    private let qrCode = "https://qr-dev.n2s.ch/#CAESZAgBEiDwR2Oj0B1_XP1WeCfXRFIN0FylcYGP27HsEhANnE0KExoKSG9tZW9mZmljZSIHWnVoYXVzZSoFQsO8cm8wADogIiO_NrgF7RtaIoQqvPhCN1GoCKGK93p3XNYV7QJ7AjgaQNssfMm583dl88rNfgD8ZPMyRna_xO87g3sNp8zhYi9cbRJ1TKB_UWTBFiO5Tx9G0xbSSOx7qW54wrPwUzjDYQ4"
+    private let wrongQrCode = "https://qr-dev.n2s.ch/#CAESZAgBEiDwR2Oj0B1_XP1WeCfRFIN0FylcYGP27HsEhANnE0KExoKSG9tZW9mZmljZSIHWnVoYXVzZSoFQsO8cm8wADogIiO_NrgF7RtaIoQqvPhCN1GoCKGK93p3XNYV7QJ7AjgaQNssfMm583dl88rNfgD8ZPMyRna_xO87g3sNp8zhYi9cbRJ1TKB_UWTBFiO5Tx9G0xbSSOx7qW54wrPwUzjDYQ4"
 
     override class func setUp() {
         N2Step.initialize()
@@ -78,7 +78,13 @@ class N2StepSDKTests: XCTestCase {
     }
 
     func testMatching() {
+        let privateKey: Bytes = [43, 251, 221, 2, 27, 157, 184, 187, 93, 206, 197, 146, 72, 110, 187, 109, 250, 171, 118, 22, 94, 68, 178, 181, 43, 243, 42, 4, 121, 199, 73, 131, 240, 71, 99, 163, 208, 29, 127, 92, 253, 86, 120, 39, 215, 68, 82, 13, 208, 92, 165, 113, 129, 143, 219, 177, 236, 18, 16, 13, 156, 77, 10, 19]
 
+        let problematicEvent = ProblematicEventInfo(privateKey: privateKey, entry: Date().addingTimeInterval(-7200), exit: Date().addingTimeInterval(7200), message: Bytes())
+
+        let matches = N2Step.checkForMatches(publishedSKs: [problematicEvent])
+
+        XCTAssert(matches.count == 1, "Match should be found")
     }
 
 }

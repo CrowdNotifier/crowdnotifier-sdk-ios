@@ -9,15 +9,22 @@
  */
 
 import Foundation
-import Sodium
 
-extension Data {
+public typealias Bytes = Array<UInt8>
+
+extension Bytes {
+    init(count: Int) {
+        self.init(repeating: 0, count: count)
+    }
+}
+
+public extension Data {
     var bytes: Bytes {
         return Bytes(self)
     }
 }
 
-extension Array where Element == UInt8 {
+public extension Array where Element == UInt8 {
     var data: Data {
         return Data(self)
     }

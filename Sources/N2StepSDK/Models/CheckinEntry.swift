@@ -9,7 +9,6 @@
  */
 
 import Foundation
-import Sodium
 
 struct CheckinEntry: Codable {
     let id: String

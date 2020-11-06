@@ -1,4 +1,4 @@
-// swift-tools-version:5.1
+// swift-tools-version:5.3
 
 import PackageDescription
 
@@ -12,15 +12,26 @@ let package = Package(
             name: "N2StepSDK",
             targets: ["N2StepSDK"]
         ),
+        .library(
+            name: "Clibsodium",
+            targets: ["Clibsodium"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/UbiqueInnovation/swift-sodium.git", .branch("feature/full-libsodium")),
-        .package(url: "https://github.com/apple/swift-protobuf.git", .revision("1.13.0")),
+        .package(
+            name: "SwiftProtobuf",
+            url: "https://github.com/apple/swift-protobuf.git",
+            .revision("1.13.0")
+        ),
     ],
     targets: [
         .target(
             name: "N2StepSDK",
-            dependencies: ["Sodium", "Clibsodium", "SwiftProtobuf"]
+            dependencies: ["SwiftProtobuf", "Clibsodium"],
+            exclude: ["libsodium", "Info.plist"]
+        ),
+        .binaryTarget(
+            name: "Clibsodium",
+            path: "Clibsodium.xcframework"
         ),
         .testTarget(
             name: "N2StepSDKTests",

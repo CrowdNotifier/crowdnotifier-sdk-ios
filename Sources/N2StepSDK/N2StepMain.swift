@@ -24,56 +24,27 @@ class N2StepMain {
     }
 
     func addCheckin(qrCode: String, arrivalTime: Date, departureTime: Date) -> Result<(VenueInfo, String), N2StepError> {
-        let result = qrCodeParser.extractVenueInformation(from: qrCode)
-
-        switch result {
-        case .success(let venueInfo):
-            // 1. Create private key esk (randombytes_buf)
-            // 2. Compute corresponding public key epk (crypto_scalarmult_ed25519_base)
-            // 3. Compute shared key h = pk^esk (crypto_scalarmult_ed25519)
-            let (epk, h) = CryptoFunctions.createPublicAndSharedKey()
-            // 4. Construct payload to store:
-            //    - arrivalTime
-            //    - departureTime
-            //    - notificationKey
-            let m = CheckinPayload(arrivalTime: arrivalTime, departureTime: departureTime, notificationKey: venueInfo.notificationKey)
-            // 5. Compute ciphertext ctxt by converting pk from ed --> curve (crypto_sign_ed25519_pk_to_curve25519),
-            //    then encrypt payload with pk' (crypto_box_seal)
-            guard let ctxt = CryptoFunctions.encryptVenuePayload(from: m, pk: venueInfo.publicKey.bytes) else {
-                return .failure(.encryptionError)
-            }
-            // 6. Store day, epk, h, ctxt
-            let id = checkinStorage.addCheckinEntry(arrivalTime: arrivalTime, epk: epk, h: h, ctxt: ctxt)
-
-            return .success((venueInfo, id))
-        case .failure(let error):
-            return .failure(error)
-        }
+        addOrUpdateCheckin(qrCode: qrCode, newArrivalTime: arrivalTime, newDepartureTime: departureTime)
     }
 
     func updateCheckin(checkinId: String, qrCode: String, newArrivalTime: Date, newDepartureTime: Date) -> Result<(VenueInfo, String), N2StepError> {
+        addOrUpdateCheckin(qrCode: qrCode, newArrivalTime: newArrivalTime, newDepartureTime: newDepartureTime, checkinId: checkinId)
+    }
+
+    private func addOrUpdateCheckin(qrCode: String, newArrivalTime: Date, newDepartureTime: Date, checkinId: String? = nil) -> Result<(VenueInfo, String), N2StepError> {
         let result = qrCodeParser.extractVenueInformation(from: qrCode)
 
         switch result {
         case .success(let venueInfo):
-            // 1. Create private key esk (randombytes_buf)
-            // 2. Compute corresponding public key epk (crypto_scalarmult_ed25519_base)
-            // 3. Compute shared key h = pk^esk (crypto_scalarmult_ed25519)
-            let (epk, h) = CryptoFunctions.createPublicAndSharedKey()
-            // 4. Construct payload to store:
-            //    - arrivalTime
-            //    - departureTime
-            //    - notificationKey
-            let m = CheckinPayload(arrivalTime: newArrivalTime, departureTime: newDepartureTime, notificationKey: venueInfo.notificationKey)
-            // 5. Compute ciphertext ctxt by converting pk from ed --> curve (crypto_sign_ed25519_pk_to_curve25519),
-            //    then encrypt payload with pk' (crypto_box_seal)
-            guard let ctxt = CryptoFunctions.encryptVenuePayload(from: m, pk: venueInfo.publicKey.bytes) else {
+
+            guard let (epk, h, ctxt) = CryptoFunctions.createCheckinEntry(venueInfo: venueInfo, arrivalTime: newArrivalTime, departureTime: newDepartureTime) else {
                 return .failure(.encryptionError)
             }
-            // 6. Store day, epk, h, ctxt
+
             let id = checkinStorage.addCheckinEntry(arrivalTime: newArrivalTime, epk: epk, h: h, ctxt: ctxt, overrideEntryWithID: checkinId)
 
             return .success((venueInfo, id))
+
         case .failure(let error):
             return .failure(error)
         }
@@ -85,12 +56,18 @@ class N2StepMain {
         var matches = [ExposureEvent]()
 
         for event in publishedSKs {
-            for entry in possibleMatches {
-                let shared = CryptoFunctions.computeSharedKey(privateKey: event.privateKey, publicKey: entry.epk.bytes)
+            guard let sk_venue_kx = CryptoFunctions.privateKeyEd25519ToCurve25519(privateKey: event.privateKey) else {
+                continue
+            }
 
-                if shared == entry.h.bytes {
+            for entry in possibleMatches {
+                guard let tagPrime = CryptoFunctions.computeSharedKey(privateKey: sk_venue_kx, publicKey: entry.epk.bytes) else {
+                    continue
+                }
+
+                if tagPrime == entry.h.bytes {
                     // We have a potential match!
-                    if let payload = CryptoFunctions.decryptPayload(ciphertext: entry.ctxt.bytes, privateKey: event.privateKey) {
+                    if let payload = CryptoFunctions.decryptPayload(ciphertext: entry.ctxt.bytes, privateKey: sk_venue_kx) {
                         let arrival = payload.arrivalTime.millisecondsSince1970
                         let departure = payload.departureTime.millisecondsSince1970
                         // Check if times actually overlap

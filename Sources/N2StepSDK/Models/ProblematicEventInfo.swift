@@ -9,7 +9,6 @@
  */
 
 import Foundation
-import Sodium
 
 public struct ProblematicEventInfo {
     public let privateKey: Bytes

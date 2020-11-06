@@ -9,60 +9,94 @@
  */
 
 import Foundation
-import Sodium
 import Clibsodium
 
 class CryptoFunctions {
 
-    private static let sodium = Sodium()
-
-    static func createPublicAndSharedKey() -> (publicKey: Bytes, sharedKey: Bytes) {
-        let esk = sodium.randomBytes.buf(length: crypto_scalarmult_scalarbytes())!
-
-        var epk = Bytes(repeating: 0, count: crypto_scalarmult_ed25519_bytes())
-        crypto_scalarmult_ed25519_base(&epk, esk)
-
-        var h = Bytes(repeating: 0, count: crypto_scalarmult_ed25519_bytes())
-        let result = crypto_scalarmult_ed25519(&h, esk, epk)
+    static func createCheckinEntry(venueInfo: VenueInfo, arrivalTime: Date, departureTime: Date) -> (epk: Bytes, h: Bytes, ctxt: Bytes)? {
+        var pk_venue_kx = Bytes(count: crypto_box_publickeybytes())
+        var result = crypto_sign_ed25519_pk_to_curve25519(&pk_venue_kx, venueInfo.publicKey.bytes)
 
         if result != 0 {
-            print("Clibsodium.crypto_scalarmult(&h, esk, epk) failed!")
-        }
-
-        return (epk, h)
-    }
-
-    static func encryptVenuePayload(from checkinPayload: CheckinPayload, pk: Bytes) -> Bytes? {
-        guard let m = try? JSONEncoder().encode(checkinPayload) else {
+            print("crypto_sign_ed25519_pk_to_curve25519 failed")
             return nil
         }
 
-        var pk_curve25519 = Bytes(repeating: 0, count: crypto_box_publickeybytes())
-        _ = crypto_sign_ed25519_pk_to_curve25519(&pk_curve25519, pk)
+        var ephemeralSecretKey = Bytes(count: crypto_scalarmult_scalarbytes())
+        randombytes(&ephemeralSecretKey, UInt64(ephemeralSecretKey.count))
 
-        return sodium.box.seal(message: m.bytes, recipientPublicKey: pk_curve25519)
-    }
-
-    static func computeSharedKey(privateKey: Bytes, publicKey: Bytes) -> Bytes {
-        var sharedKey = Bytes(repeating: 0, count: crypto_scalarmult_ed25519_bytes())
-        let result = crypto_scalarmult_ed25519(&sharedKey, privateKey, publicKey)
+        var ephemeralPublicKey = Bytes(count: crypto_scalarmult_bytes())
+        result = crypto_scalarmult_base(&ephemeralPublicKey, ephemeralSecretKey)
 
         if result != 0 {
-            print("Clibsodium.crypto_scalarmult(&h, esk, epk) failed!")
+            print("crypto_scalarmult_base failed")
+            return nil
         }
 
-        return sharedKey
+        var tag = Bytes(count: crypto_scalarmult_bytes())
+        result = crypto_scalarmult(&tag, ephemeralSecretKey, pk_venue_kx)
+
+        if result != 0 {
+            print("crypto_scalarmult failed")
+            return nil
+        }
+
+        let payload = CheckinPayload(arrivalTime: arrivalTime, departureTime: departureTime, notificationKey: venueInfo.notificationKey)
+
+        guard let m = try? JSONEncoder().encode(payload) else {
+            print("Could not encode payload")
+            return nil
+        }
+
+        var encrypted = Bytes(count: m.count + crypto_box_sealbytes())
+        crypto_box_seal(&encrypted, m.bytes, UInt64(m.count), pk_venue_kx)
+
+        return (ephemeralPublicKey, tag, encrypted)
+    }
+
+    static func privateKeyEd25519ToCurve25519(privateKey: Bytes) -> Bytes? {
+        var curve = Bytes(count: crypto_box_secretkeybytes())
+        let result = crypto_sign_ed25519_sk_to_curve25519(&curve, privateKey)
+
+        if result != 0 {
+            print("crypto_sign_ed25519_sk_to_curve25519 failed")
+            return nil
+        }
+
+        return curve
+    }
+
+    static func computeSharedKey(privateKey: Bytes, publicKey: Bytes) -> Bytes? {
+        var tagPrime = Bytes(count: crypto_scalarmult_bytes())
+        let result = crypto_scalarmult(&tagPrime, privateKey, publicKey)
+
+        if result != 0 {
+            print("crypto_scalarmult failed")
+            return nil
+        }
+
+        return tagPrime
     }
 
     static func decryptPayload(ciphertext: Bytes, privateKey: Bytes) -> CheckinPayload? {
-        var publicKey = Bytes(repeating: 0, count: crypto_scalarmult_curve25519_bytes())
-        crypto_scalarmult_curve25519_base(&publicKey, privateKey)
 
-        if let data = sodium.box.open(anonymousCipherText: ciphertext, recipientPublicKey: publicKey, recipientSecretKey: privateKey)?.data {
-            return try? JSONDecoder().decode(CheckinPayload.self, from: data)
+        var pk_venue_kx = Bytes(count: crypto_box_publickeybytes())
+        var result = crypto_scalarmult_curve25519_base(&pk_venue_kx, privateKey)
+
+        if result != 0 {
+            print("Error during crypto_scalarmult_curve25519_base")
+            return nil
         }
 
-        return nil
+        var data = Bytes(count: ciphertext.count - crypto_box_sealbytes())
+        result = crypto_box_seal_open(&data, ciphertext, UInt64(ciphertext.count), pk_venue_kx, privateKey)
+
+        if result != 0 {
+            print("Error during crypto_box_seal_open")
+            return nil
+        }
+
+        return try? JSONDecoder().decode(CheckinPayload.self, from: data.data)
     }
 
 }
