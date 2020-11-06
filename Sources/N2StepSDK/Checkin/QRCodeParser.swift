@@ -8,11 +8,10 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import Foundation
 import Clibsodium
+import Foundation
 
 class QRCodeParser {
-
     func extractVenueInformation(from qrCode: String) -> Result<VenueInfo, N2StepError> {
         guard let url = URL(string: qrCode) else {
             print("Could not create url from string: \(qrCode)")
@@ -43,24 +42,23 @@ class QRCodeParser {
         let code = wrapper.content
 
         let info = VenueInfo(publicKey: code.publicKey,
-                         notificationKey: code.notificationKey,
-                         name: code.name,
-                         location: code.location,
-                         room: code.hasRoom ? code.room : nil,
-                         venueType: .fromVenueType(code.venueType))
+                             notificationKey: code.notificationKey,
+                             name: code.name,
+                             location: code.location,
+                             room: code.hasRoom ? code.room : nil,
+                             venueType: .fromVenueType(code.venueType))
 
         return .success(info)
     }
-
 }
 
-fileprivate func base642bin(_ b64: String, ignore: String? = nil) -> Bytes? {
+private func base642bin(_ b64: String, ignore: String? = nil) -> Bytes? {
     let b64Bytes = Bytes(b64.utf8).map(Int8.init)
     let b64BytesLen = b64Bytes.count
     let binBytesCapacity = b64BytesLen * 3 / 4 + 1
     var binBytes = Bytes(count: binBytesCapacity)
     var binBytesLen: size_t = 0
-    let ignore_nsstr = ignore.flatMap({ NSString(string: $0) })
+    let ignore_nsstr = ignore.flatMap { NSString(string: $0) }
     let ignore_cstr = ignore_nsstr?.cString(using: String.Encoding.isoLatin1.rawValue)
 
     let result = sodium_base642bin(&binBytes, binBytesCapacity, b64Bytes, b64BytesLen, ignore_cstr, &binBytesLen, nil, sodium_base64_VARIANT_URLSAFE_NO_PADDING)
@@ -79,5 +77,5 @@ extension ArraySlice where Element == UInt8 {
 }
 
 extension String {
-    var bytes: Bytes { return Bytes(self.utf8) }
+    var bytes: Bytes { return Bytes(utf8) }
 }

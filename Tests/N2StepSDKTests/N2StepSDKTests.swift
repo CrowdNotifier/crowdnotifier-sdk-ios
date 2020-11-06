@@ -1,21 +1,19 @@
 /*
-* Copyright (c) 2020 Ubique Innovation AG <https://www.ubique.ch>
-*
-* This Source Code Form is subject to the terms of the Mozilla Public
-* License, v. 2.0. If a copy of the MPL was not distributed with this
-* file, You can obtain one at https://mozilla.org/MPL/2.0/.
-*
-* SPDX-License-Identifier: MPL-2.0
-*/
+ * Copyright (c) 2020 Ubique Innovation AG <https://www.ubique.ch>
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ */
 
-
-@testable import N2StepSDK
 import Clibsodium
 import Foundation
+@testable import N2StepSDK
 import XCTest
 
 class N2StepSDKTests: XCTestCase {
-
     private let storage: CheckinStorage = .shared
 
     private let qrCode = "https://qr-dev.n2s.ch/#CAESZAgBEiDwR2Oj0B1_XP1WeCfXRFIN0FylcYGP27HsEhANnE0KExoKSG9tZW9mZmljZSIHWnVoYXVzZSoFQsO8cm8wADogIiO_NrgF7RtaIoQqvPhCN1GoCKGK93p3XNYV7QJ7AjgaQNssfMm583dl88rNfgD8ZPMyRna_xO87g3sNp8zhYi9cbRJ1TKB_UWTBFiO5Tx9G0xbSSOx7qW54wrPwUzjDYQ4"
@@ -30,12 +28,12 @@ class N2StepSDKTests: XCTestCase {
         let result = N2Step.getVenueInfo(qrCode: qrCode)
 
         switch result {
-        case .success(let venue):
+        case let .success(venue):
             XCTAssert(venue.name == "Homeoffice", "Wrong venue name")
             XCTAssert(venue.location == "Zuhause", "Wrong venue location")
             XCTAssert(venue.room == "Büro", "Wrong venue room")
             XCTAssert(venue.venueType == .other, "Wrong venue type")
-        case .failure(_):
+        case .failure:
             XCTFail("QR Code should be correct")
         }
     }
@@ -44,9 +42,9 @@ class N2StepSDKTests: XCTestCase {
         let result = N2Step.getVenueInfo(qrCode: wrongQrCode)
 
         switch result {
-        case .success(_):
+        case .success:
             XCTFail("QR Code should not be correct")
-        case .failure(let error):
+        case let .failure(error):
             XCTAssert(error == .invalidQRCode, "Error case should be .invalidQRCode")
         }
     }
@@ -72,7 +70,7 @@ class N2StepSDKTests: XCTestCase {
             XCTAssert(entry.id == id, "Entry has wrong id")
             XCTAssert(entry.daysSince1970 == arrivalTime.daysSince1970, "Wrong daysSince1970 value")
 
-        case .failure(_):
+        case .failure:
             XCTFail("Checkin with correct QR Code should succeed")
         }
     }
@@ -86,5 +84,4 @@ class N2StepSDKTests: XCTestCase {
 
         XCTAssert(matches.count == 1, "Match should be found")
     }
-
 }

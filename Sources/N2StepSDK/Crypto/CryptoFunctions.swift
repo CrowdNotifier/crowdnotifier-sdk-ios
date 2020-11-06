@@ -8,11 +8,10 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import Foundation
 import Clibsodium
+import Foundation
 
 class CryptoFunctions {
-
     static func createCheckinEntry(venueInfo: VenueInfo, arrivalTime: Date, departureTime: Date) -> (epk: Bytes, h: Bytes, ctxt: Bytes)? {
         var pk_venue_kx = Bytes(count: crypto_box_publickeybytes())
         var result = crypto_sign_ed25519_pk_to_curve25519(&pk_venue_kx, venueInfo.publicKey.bytes)
@@ -79,7 +78,6 @@ class CryptoFunctions {
     }
 
     static func decryptPayload(ciphertext: Bytes, privateKey: Bytes) -> CheckinPayload? {
-
         var pk_venue_kx = Bytes(count: crypto_box_publickeybytes())
         var result = crypto_scalarmult_curve25519_base(&pk_venue_kx, privateKey)
 
@@ -98,5 +96,4 @@ class CryptoFunctions {
 
         return try? JSONDecoder().decode(CheckinPayload.self, from: data.data)
     }
-
 }

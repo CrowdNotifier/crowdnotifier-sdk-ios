@@ -14,7 +14,8 @@ let package = Package(
         ),
         .library(
             name: "Clibsodium",
-            targets: ["Clibsodium"]),
+            targets: ["Clibsodium"]
+        ),
     ],
     dependencies: [
         .package(

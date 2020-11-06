@@ -11,7 +11,6 @@
 import Foundation
 
 extension Date {
-
     var millisecondsSince1970: Int {
         return Int(timeIntervalSince1970 * 1000.0)
     }
@@ -21,7 +20,6 @@ extension Date {
     }
 
     var daysSince1970: Int {
-        return Int(self.timeIntervalSince1970 / .day)
+        return Int(timeIntervalSince1970 / .day)
     }
-
 }

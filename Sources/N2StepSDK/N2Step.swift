@@ -13,10 +13,9 @@ import Foundation
 private var instance: N2StepMain!
 
 public enum N2Step {
-
     /// The current version of the SDK
     public static let frameworkVersion: String = "1.0"
-    
+
     public static func initialize() {
         precondition(instance == nil, "N2StepSDK already initialized")
         instance = N2StepMain()
@@ -50,5 +49,4 @@ public enum N2Step {
     private static func instancePrecondition() {
         precondition(instance != nil, "N2StepSDK not initialized, call `initialize()`")
     }
-    
 }

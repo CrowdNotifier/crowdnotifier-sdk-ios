@@ -11,7 +11,6 @@
 import Foundation
 
 class CheckinStorage {
-
     private let userDefaults: UserDefaults = .standard
 
     static let shared = CheckinStorage()
@@ -19,7 +18,6 @@ class CheckinStorage {
     private init() {}
 
     func addCheckinEntry(arrivalTime: Date, epk: Bytes, h: Bytes, ctxt: Bytes, overrideEntryWithID: String? = nil) -> String {
-
         if let overrideId = overrideEntryWithID {
             let e = CheckinEntry(id: overrideId, daysSince1970: arrivalTime.daysSince1970, epk: Data(epk), h: Data(h), ctxt: Data(ctxt))
             checkinEntries[overrideId] = try? JSONEncoder().encode(e)
@@ -71,7 +69,6 @@ class CheckinStorage {
 
         return result
     }
-
 }
 
 private extension String {

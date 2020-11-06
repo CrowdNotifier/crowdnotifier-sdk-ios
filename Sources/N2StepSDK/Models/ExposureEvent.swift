@@ -10,7 +10,7 @@
 
 import Foundation
 
-public struct ExposureEvent : Codable {
+public struct ExposureEvent: Codable {
     public let checkinId: String
     public let arrivalTime: Date
     public let departureTime: Date
@@ -18,7 +18,7 @@ public struct ExposureEvent : Codable {
 }
 
 extension ExposureEvent: Equatable {
-    public static func ==(_ lhs: ExposureEvent, _ rhs: ExposureEvent) -> Bool {
+    public static func == (_ lhs: ExposureEvent, _ rhs: ExposureEvent) -> Bool {
         return lhs.checkinId == rhs.checkinId
     }
 }

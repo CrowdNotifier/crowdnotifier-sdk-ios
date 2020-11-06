@@ -11,7 +11,6 @@
 import Foundation
 
 class N2StepMain {
-
     private var qrCodeParser: QRCodeParser
     private let checkinStorage: CheckinStorage = .shared
 
@@ -35,7 +34,7 @@ class N2StepMain {
         let result = qrCodeParser.extractVenueInformation(from: qrCode)
 
         switch result {
-        case .success(let venueInfo):
+        case let .success(venueInfo):
 
             guard let (epk, h, ctxt) = CryptoFunctions.createCheckinEntry(venueInfo: venueInfo, arrivalTime: newArrivalTime, departureTime: newDepartureTime) else {
                 return .failure(.encryptionError)
@@ -45,7 +44,7 @@ class N2StepMain {
 
             return .success((venueInfo, id))
 
-        case .failure(let error):
+        case let .failure(error):
             return .failure(error)
         }
     }
@@ -71,7 +70,7 @@ class N2StepMain {
                         let arrival = payload.arrivalTime.millisecondsSince1970
                         let departure = payload.departureTime.millisecondsSince1970
                         // Check if times actually overlap
-                        if (arrival <= event.exit.millisecondsSince1970 && departure >= event.entry.millisecondsSince1970) {
+                        if arrival <= event.exit.millisecondsSince1970, departure >= event.entry.millisecondsSince1970 {
                             matches.append(ExposureEvent(checkinId: entry.id, arrivalTime: payload.arrivalTime, departureTime: payload.departureTime, message: "Match!"))
                             break
                         }
@@ -79,12 +78,11 @@ class N2StepMain {
                 }
             }
         }
-        
+
         return matches
     }
 
     func cleanUpOldData(maxDaysToKeep: Int) {
         checkinStorage.cleanUpOldData(maxDaysToKeep: maxDaysToKeep)
     }
-
 }

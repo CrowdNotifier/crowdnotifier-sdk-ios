@@ -11,7 +11,6 @@
 import Foundation
 
 public struct VenueInfo: Codable {
-
     public enum VenueType: String, Codable {
         case other = "OTHER"
         case restaurant = "RESTAURANT"

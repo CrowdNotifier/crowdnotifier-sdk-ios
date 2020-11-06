@@ -10,7 +10,7 @@
 
 import Foundation
 
-public typealias Bytes = Array<UInt8>
+public typealias Bytes = [UInt8]
 
 extension Bytes {
     init(count: Int) {

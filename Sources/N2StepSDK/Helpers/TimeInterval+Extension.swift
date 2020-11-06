@@ -10,26 +10,24 @@
 
 import Foundation
 
-extension TimeInterval {
-
+public extension TimeInterval {
     /// A time interval of one second.
-    public static var second: TimeInterval {
+    static var second: TimeInterval {
         return 1
     }
 
     /// A time interval of one minute.
-    public static var minute: TimeInterval {
+    static var minute: TimeInterval {
         return 60 * .second
     }
 
     /// A time interval of one hour.
-    public static var hour: TimeInterval {
+    static var hour: TimeInterval {
         return 60 * .minute
     }
 
     /// A time interval of one day.
-    public static var day: TimeInterval {
+    static var day: TimeInterval {
         return 24 * .hour
     }
-
 }
