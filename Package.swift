@@ -10,8 +10,11 @@ let package = Package(
     products: [
         .library(
             name: "N2StepSDK",
-            targets: ["N2StepSDK", "Clibsodium"]
+            targets: ["N2StepSDK"]
         ),
+        .library(
+            name: "Clibsodium",
+            targets: ["Clibsodium"]),
     ],
     dependencies: [
         .package(
@@ -23,11 +26,13 @@ let package = Package(
     targets: [
         .target(
             name: "N2StepSDK",
-            dependencies: ["SwiftProtobuf"]
+            dependencies: ["SwiftProtobuf", "Clibsodium"],
+            exclude: ["libsodium", "Info.plist"]
         ),
         .binaryTarget(
             name: "Clibsodium",
-            path: "Clibsodium.xcframework"),
+            path: "Clibsodium.xcframework"
+        ),
         .testTarget(
             name: "N2StepSDKTests",
             dependencies: ["N2StepSDK"]
