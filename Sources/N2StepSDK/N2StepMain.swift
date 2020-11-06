@@ -65,6 +65,10 @@ class N2StepMain {
                     continue
                 }
 
+                guard !matches.map({ $0.checkinId }).contains(entry.id) else {
+                    continue
+                }
+
                 if tagPrime == entry.h.bytes {
                     // We have a potential match!
                     if let payload = CryptoFunctions.decryptPayload(ciphertext: entry.ctxt.bytes, privateKey: sk_venue_kx) {
@@ -73,7 +77,7 @@ class N2StepMain {
                         // Check if times actually overlap
                         if arrival <= event.exit.millisecondsSince1970, departure >= event.entry.millisecondsSince1970 {
                             matches.append(ExposureEvent(checkinId: entry.id, arrivalTime: payload.arrivalTime, departureTime: payload.departureTime, message: "Match!"))
-                            break
+                            continue
                         }
                     }
                 }
