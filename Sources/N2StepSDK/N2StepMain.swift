@@ -13,6 +13,7 @@ import Foundation
 class N2StepMain {
     private var qrCodeParser: QRCodeParser
     private let checkinStorage: CheckinStorage = .shared
+    private let exposureStorage: ExposureStorage = .shared
 
     init() {
         qrCodeParser = QRCodeParser()
@@ -79,7 +80,13 @@ class N2StepMain {
             }
         }
 
+        exposureStorage.setExposureEvents(matches)
+
         return matches
+    }
+
+    func getExposureEvents() -> [ExposureEvent] {
+        return exposureStorage.exposureEvents
     }
 
     func cleanUpOldData(maxDaysToKeep: Int) {

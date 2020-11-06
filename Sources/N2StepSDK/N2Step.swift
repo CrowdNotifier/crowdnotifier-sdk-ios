@@ -41,6 +41,11 @@ public enum N2Step {
         return instance.checkForMatches(publishedSKs: publishedSKs)
     }
 
+    public static func getExposureEvents() -> [ExposureEvent] {
+        instancePrecondition()
+        return instance.getExposureEvents()
+    }
+
     public static func cleanUpOldData(maxDaysToKeep: Int) {
         instancePrecondition()
         instance.cleanUpOldData(maxDaysToKeep: maxDaysToKeep)
