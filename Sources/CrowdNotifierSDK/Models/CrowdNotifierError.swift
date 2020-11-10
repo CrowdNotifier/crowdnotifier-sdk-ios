@@ -1,4 +1,3 @@
-//
 /*
  * Copyright (c) 2020 Ubique Innovation AG <https://www.ubique.ch>
  *
@@ -11,15 +10,8 @@
 
 import Foundation
 
-class ExposureStorage {
-    static let shared = ExposureStorage()
-
-    private init() {}
-
-    @KeychainPersisted(key: "ch.n2step.exposure.events.key", defaultValue: [])
-    private(set) var exposureEvents: [ExposureEvent]
-
-    func setExposureEvents(_ events: [ExposureEvent]) {
-        exposureEvents = events
-    }
+public enum CrowdNotifierError: Error, Equatable {
+    case invalidQRCode
+    case invalidSignature
+    case encryptionError
 }

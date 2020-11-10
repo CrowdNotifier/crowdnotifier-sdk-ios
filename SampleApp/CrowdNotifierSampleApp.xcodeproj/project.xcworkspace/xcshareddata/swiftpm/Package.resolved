@@ -18,15 +18,6 @@
           "revision": "426bef0ddfdc6449b7bd1418baafad6bbc56110b",
           "version": null
         }
-      },
-      {
-        "package": "Sodium",
-        "repositoryURL": "https://github.com/UbiqueInnovation/swift-sodium.git",
-        "state": {
-          "branch": "feature/full-libsodium",
-          "revision": "7c43f9a459f39dbdf3880e0729f7da5bca771900",
-          "version": null
-        }
       }
     ]
   },

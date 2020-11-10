@@ -72,5 +72,5 @@ class CheckinStorage {
 }
 
 private extension String {
-    static let checkinEntries = "ch.ubique.n2step.checkinEntries"
+    static let checkinEntries = "sdk.crowdnotifier.checkinEntries"
 }

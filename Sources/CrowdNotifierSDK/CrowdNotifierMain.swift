@@ -10,7 +10,7 @@
 
 import Foundation
 
-class N2StepMain {
+class CrowdNotifierMain {
     private var qrCodeParser: QRCodeParser
     private let checkinStorage: CheckinStorage = .shared
     private let exposureStorage: ExposureStorage = .shared
@@ -19,19 +19,19 @@ class N2StepMain {
         qrCodeParser = QRCodeParser()
     }
 
-    func getVenueInfo(qrCode: String) -> Result<VenueInfo, N2StepError> {
+    func getVenueInfo(qrCode: String) -> Result<VenueInfo, CrowdNotifierError> {
         return qrCodeParser.extractVenueInformation(from: qrCode)
     }
 
-    func addCheckin(qrCode: String, arrivalTime: Date, departureTime: Date) -> Result<(VenueInfo, String), N2StepError> {
+    func addCheckin(qrCode: String, arrivalTime: Date, departureTime: Date) -> Result<(VenueInfo, String), CrowdNotifierError> {
         addOrUpdateCheckin(qrCode: qrCode, newArrivalTime: arrivalTime, newDepartureTime: departureTime)
     }
 
-    func updateCheckin(checkinId: String, qrCode: String, newArrivalTime: Date, newDepartureTime: Date) -> Result<(VenueInfo, String), N2StepError> {
+    func updateCheckin(checkinId: String, qrCode: String, newArrivalTime: Date, newDepartureTime: Date) -> Result<(VenueInfo, String), CrowdNotifierError> {
         addOrUpdateCheckin(qrCode: qrCode, newArrivalTime: newArrivalTime, newDepartureTime: newDepartureTime, checkinId: checkinId)
     }
 
-    private func addOrUpdateCheckin(qrCode: String, newArrivalTime: Date, newDepartureTime: Date, checkinId: String? = nil) -> Result<(VenueInfo, String), N2StepError> {
+    private func addOrUpdateCheckin(qrCode: String, newArrivalTime: Date, newDepartureTime: Date, checkinId: String? = nil) -> Result<(VenueInfo, String), CrowdNotifierError> {
         let result = qrCodeParser.extractVenueInformation(from: qrCode)
 
         switch result {

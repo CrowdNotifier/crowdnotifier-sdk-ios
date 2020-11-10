@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "F83BE135242DDC450043FA1E"
-               BuildableName = "N2StepSampleApp.app"
-               BlueprintName = "N2StepSampleApp"
-               ReferencedContainer = "container:N2StepSampleApp.xcodeproj">
+               BuildableName = "CrowdNotifierSampleApp.app"
+               BlueprintName = "CrowdNotifierSampleApp"
+               ReferencedContainer = "container:CrowdNotifierSampleApp.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -47,6 +47,15 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "F83BE135242DDC450043FA1E"
+            BuildableName = "CrowdNotifierSampleApp.app"
+            BlueprintName = "CrowdNotifierSampleApp"
+            ReferencedContainer = "container:CrowdNotifierSampleApp.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

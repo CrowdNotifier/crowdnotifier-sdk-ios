@@ -1,3 +1,4 @@
+//
 /*
  * Copyright (c) 2020 Ubique Innovation AG <https://www.ubique.ch>
  *
@@ -10,8 +11,15 @@
 
 import Foundation
 
-public enum N2StepError: Error, Equatable {
-    case invalidQRCode
-    case invalidSignature
-    case encryptionError
+class ExposureStorage {
+    static let shared = ExposureStorage()
+
+    private init() {}
+
+    @KeychainPersisted(key: "sdk.crowdnotifier.exposure.events.key", defaultValue: [])
+    private(set) var exposureEvents: [ExposureEvent]
+
+    func setExposureEvents(_ events: [ExposureEvent]) {
+        exposureEvents = events
+    }
 }

@@ -8,11 +8,11 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import N2StepSDK
+import CrowdNotifierSDK
 import UIKit
 
 func initializeSDK() {
-    N2Step.initialize()
+    CrowdNotifier.initialize()
 }
 
 @UIApplicationMain

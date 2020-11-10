@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		DC13C51D2549EE25001B443C /* N2StepSDK in Frameworks */ = {isa = PBXBuildFile; productRef = DC13C51C2549EE25001B443C /* N2StepSDK */; };
+		DC5873B8255ACD6E008157CB /* CrowdNotifierSDK in Frameworks */ = {isa = PBXBuildFile; productRef = DC5873B7255ACD6E008157CB /* CrowdNotifierSDK */; };
 		F812AC56243DF459005F26AE /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F812AC55243DF459005F26AE /* RootViewController.swift */; };
 		F83BE13A242DDC450043FA1E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F83BE139242DDC450043FA1E /* AppDelegate.swift */; };
 		F83BE143242DDC460043FA1E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F83BE142242DDC460043FA1E /* Assets.xcassets */; };
@@ -17,7 +17,7 @@
 
 /* Begin PBXFileReference section */
 		F812AC55243DF459005F26AE /* RootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
-		F83BE136242DDC450043FA1E /* N2StepSampleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = N2StepSampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F83BE136242DDC450043FA1E /* CrowdNotifierSampleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrowdNotifierSampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F83BE139242DDC450043FA1E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F83BE142242DDC460043FA1E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F83BE145242DDC460043FA1E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -31,7 +31,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F83BE150242DDFF60043FA1E /* SnapKit in Frameworks */,
-				DC13C51D2549EE25001B443C /* N2StepSDK in Frameworks */,
+				DC5873B8255ACD6E008157CB /* CrowdNotifierSDK in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -41,7 +41,7 @@
 		F83BE12D242DDC450043FA1E = {
 			isa = PBXGroup;
 			children = (
-				F83BE138242DDC450043FA1E /* N2StepSampleApp */,
+				F83BE138242DDC450043FA1E /* CrowdNotifierSampleApp */,
 				F83BE137242DDC450043FA1E /* Products */,
 				F83BE151242DE0C00043FA1E /* Frameworks */,
 			);
@@ -50,12 +50,12 @@
 		F83BE137242DDC450043FA1E /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F83BE136242DDC450043FA1E /* N2StepSampleApp.app */,
+				F83BE136242DDC450043FA1E /* CrowdNotifierSampleApp.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		F83BE138242DDC450043FA1E /* N2StepSampleApp */ = {
+		F83BE138242DDC450043FA1E /* CrowdNotifierSampleApp */ = {
 			isa = PBXGroup;
 			children = (
 				F83BE139242DDC450043FA1E /* AppDelegate.swift */,
@@ -64,7 +64,7 @@
 				F83BE144242DDC460043FA1E /* LaunchScreen.storyboard */,
 				F83BE147242DDC460043FA1E /* Info.plist */,
 			);
-			path = N2StepSampleApp;
+			path = CrowdNotifierSampleApp;
 			sourceTree = "<group>";
 		};
 		F83BE151242DE0C00043FA1E /* Frameworks */ = {
@@ -78,9 +78,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		F83BE135242DDC450043FA1E /* N2StepSampleApp */ = {
+		F83BE135242DDC450043FA1E /* CrowdNotifierSampleApp */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = F83BE14A242DDC460043FA1E /* Build configuration list for PBXNativeTarget "N2StepSampleApp" */;
+			buildConfigurationList = F83BE14A242DDC460043FA1E /* Build configuration list for PBXNativeTarget "CrowdNotifierSampleApp" */;
 			buildPhases = (
 				F83BE132242DDC450043FA1E /* Sources */,
 				F83BE133242DDC450043FA1E /* Frameworks */,
@@ -90,13 +90,13 @@
 			);
 			dependencies = (
 			);
-			name = N2StepSampleApp;
+			name = CrowdNotifierSampleApp;
 			packageProductDependencies = (
 				F83BE14F242DDFF60043FA1E /* SnapKit */,
-				DC13C51C2549EE25001B443C /* N2StepSDK */,
+				DC5873B7255ACD6E008157CB /* CrowdNotifierSDK */,
 			);
 			productName = CovidTracingTestApp;
-			productReference = F83BE136242DDC450043FA1E /* N2StepSampleApp.app */;
+			productReference = F83BE136242DDC450043FA1E /* CrowdNotifierSampleApp.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -114,7 +114,7 @@
 					};
 				};
 			};
-			buildConfigurationList = F83BE131242DDC450043FA1E /* Build configuration list for PBXProject "N2StepSampleApp" */;
+			buildConfigurationList = F83BE131242DDC450043FA1E /* Build configuration list for PBXProject "CrowdNotifierSampleApp" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -130,7 +130,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				F83BE135242DDC450043FA1E /* N2StepSampleApp */,
+				F83BE135242DDC450043FA1E /* CrowdNotifierSampleApp */,
 			);
 		};
 /* End PBXProject section */
@@ -242,14 +242,14 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JH7CQD4MLU;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
-				INFOPLIST_FILE = N2StepSampleApp/Info.plist;
+				INFOPLIST_FILE = CrowdNotifierSampleApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.7;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				OTHER_SWIFT_FLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = ch.ubique.n2step.dev;
+				PRODUCT_BUNDLE_IDENTIFIER = ch.ubique.crowdnotifier.dev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
@@ -323,14 +323,14 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JH7CQD4MLU;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
-				INFOPLIST_FILE = N2StepSampleApp/Info.plist;
+				INFOPLIST_FILE = CrowdNotifierSampleApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.7;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				OTHER_SWIFT_FLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = ch.ubique.n2step.dev;
+				PRODUCT_BUNDLE_IDENTIFIER = ch.ubique.crowdnotifier.dev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
@@ -342,7 +342,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		F83BE131242DDC450043FA1E /* Build configuration list for PBXProject "N2StepSampleApp" */ = {
+		F83BE131242DDC450043FA1E /* Build configuration list for PBXProject "CrowdNotifierSampleApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F83BE148242DDC460043FA1E /* Debug */,
@@ -351,7 +351,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		F83BE14A242DDC460043FA1E /* Build configuration list for PBXNativeTarget "N2StepSampleApp" */ = {
+		F83BE14A242DDC460043FA1E /* Build configuration list for PBXNativeTarget "CrowdNotifierSampleApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F83BE14B242DDC460043FA1E /* Debug */,
@@ -374,9 +374,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		DC13C51C2549EE25001B443C /* N2StepSDK */ = {
+		DC5873B7255ACD6E008157CB /* CrowdNotifierSDK */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = N2StepSDK;
+			productName = CrowdNotifierSDK;
 		};
 		F83BE14F242DDFF60043FA1E /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;

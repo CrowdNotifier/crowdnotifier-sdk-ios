@@ -10,22 +10,22 @@
 
 import Clibsodium
 import Foundation
-@testable import N2StepSDK
+@testable import CrowdNotifierSDK
 import XCTest
 
-class N2StepSDKTests: XCTestCase {
+class CrowdNotifierSDKTests: XCTestCase {
     private let storage: CheckinStorage = .shared
 
     private let qrCode = "https://qr-dev.n2s.ch/#CAESZAgBEiDwR2Oj0B1_XP1WeCfXRFIN0FylcYGP27HsEhANnE0KExoKSG9tZW9mZmljZSIHWnVoYXVzZSoFQsO8cm8wADogIiO_NrgF7RtaIoQqvPhCN1GoCKGK93p3XNYV7QJ7AjgaQNssfMm583dl88rNfgD8ZPMyRna_xO87g3sNp8zhYi9cbRJ1TKB_UWTBFiO5Tx9G0xbSSOx7qW54wrPwUzjDYQ4"
     private let wrongQrCode = "https://qr-dev.n2s.ch/#CAESZAgBEiDwR2Oj0B1_XP1WeCfRFIN0FylcYGP27HsEhANnE0KExoKSG9tZW9mZmljZSIHWnVoYXVzZSoFQsO8cm8wADogIiO_NrgF7RtaIoQqvPhCN1GoCKGK93p3XNYV7QJ7AjgaQNssfMm583dl88rNfgD8ZPMyRna_xO87g3sNp8zhYi9cbRJ1TKB_UWTBFiO5Tx9G0xbSSOx7qW54wrPwUzjDYQ4"
 
     override class func setUp() {
-        N2Step.initialize()
-        N2Step.cleanUpOldData(maxDaysToKeep: 0)
+        CrowdNotifier.initialize()
+        CrowdNotifier.cleanUpOldData(maxDaysToKeep: 0)
     }
 
     func testCorrectQrCode() {
-        let result = N2Step.getVenueInfo(qrCode: qrCode)
+        let result = CrowdNotifier.getVenueInfo(qrCode: qrCode)
 
         switch result {
         case let .success(venue):
@@ -39,7 +39,7 @@ class N2StepSDKTests: XCTestCase {
     }
 
     func testWrongQrCode() {
-        let result = N2Step.getVenueInfo(qrCode: wrongQrCode)
+        let result = CrowdNotifier.getVenueInfo(qrCode: wrongQrCode)
 
         switch result {
         case .success:
@@ -51,7 +51,7 @@ class N2StepSDKTests: XCTestCase {
 
     func testAddCheckin() {
         let arrivalTime = Date()
-        let result = N2Step.addCheckin(qrCode: qrCode, arrivalTime: arrivalTime, departureTime: arrivalTime.addingTimeInterval(.hour * 2))
+        let result = CrowdNotifier.addCheckin(qrCode: qrCode, arrivalTime: arrivalTime, departureTime: arrivalTime.addingTimeInterval(.hour * 2))
 
         switch result {
         case .success(let (venue, id)):
@@ -80,7 +80,7 @@ class N2StepSDKTests: XCTestCase {
 
         let problematicEvent = ProblematicEventInfo(privateKey: privateKey, entry: Date().addingTimeInterval(-7200), exit: Date().addingTimeInterval(7200), message: Bytes())
 
-        let matches = N2Step.checkForMatches(publishedSKs: [problematicEvent])
+        let matches = CrowdNotifier.checkForMatches(publishedSKs: [problematicEvent])
 
         XCTAssert(matches.count == 1, "Match should be found")
     }
@@ -90,7 +90,7 @@ class N2StepSDKTests: XCTestCase {
 
         let problematicEvent = ProblematicEventInfo(privateKey: privateKey, entry: Date().addingTimeInterval(-7200), exit: Date().addingTimeInterval(-3600), message: Bytes())
 
-        let matches = N2Step.checkForMatches(publishedSKs: [problematicEvent])
+        let matches = CrowdNotifier.checkForMatches(publishedSKs: [problematicEvent])
 
         XCTAssert(matches.isEmpty, "No match should be found")
     }
@@ -100,7 +100,7 @@ class N2StepSDKTests: XCTestCase {
 
         let problematicEvent = ProblematicEventInfo(privateKey: privateKey, entry: Date().addingTimeInterval(-7200), exit: Date().addingTimeInterval(7200), message: Bytes())
 
-        let matches = N2Step.checkForMatches(publishedSKs: [problematicEvent])
+        let matches = CrowdNotifier.checkForMatches(publishedSKs: [problematicEvent])
 
         XCTAssert(matches.isEmpty, "No match should be found")
     }

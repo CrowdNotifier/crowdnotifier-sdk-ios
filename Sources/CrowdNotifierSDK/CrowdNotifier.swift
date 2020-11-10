@@ -10,28 +10,28 @@
 
 import Foundation
 
-private var instance: N2StepMain!
+private var instance: CrowdNotifierMain!
 
-public enum N2Step {
+public enum CrowdNotifier {
     /// The current version of the SDK
     public static let frameworkVersion: String = "1.0"
 
     public static func initialize() {
-        precondition(instance == nil, "N2StepSDK already initialized")
-        instance = N2StepMain()
+        precondition(instance == nil, "CrowdNotifierSDK already initialized")
+        instance = CrowdNotifierMain()
     }
 
-    public static func getVenueInfo(qrCode: String) -> Result<VenueInfo, N2StepError> {
+    public static func getVenueInfo(qrCode: String) -> Result<VenueInfo, CrowdNotifierError> {
         instancePrecondition()
         return instance.getVenueInfo(qrCode: qrCode)
     }
 
-    public static func addCheckin(qrCode: String, arrivalTime: Date, departureTime: Date) -> Result<(VenueInfo, String), N2StepError> {
+    public static func addCheckin(qrCode: String, arrivalTime: Date, departureTime: Date) -> Result<(VenueInfo, String), CrowdNotifierError> {
         instancePrecondition()
         return instance.addCheckin(qrCode: qrCode, arrivalTime: arrivalTime, departureTime: departureTime)
     }
 
-    public static func updateCheckin(checkinId: String, qrCode: String, newArrivalTime: Date, newDepartureTime: Date) -> Result<(VenueInfo, String), N2StepError> {
+    public static func updateCheckin(checkinId: String, qrCode: String, newArrivalTime: Date, newDepartureTime: Date) -> Result<(VenueInfo, String), CrowdNotifierError> {
         instancePrecondition()
         return instance.updateCheckin(checkinId: checkinId, qrCode: qrCode, newArrivalTime: newArrivalTime, newDepartureTime: newDepartureTime)
     }
@@ -52,6 +52,6 @@ public enum N2Step {
     }
 
     private static func instancePrecondition() {
-        precondition(instance != nil, "N2StepSDK not initialized, call `initialize()`")
+        precondition(instance != nil, "CrowdNotifierSDK not initialized, call `initialize()`")
     }
 }

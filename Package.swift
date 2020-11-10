@@ -3,14 +3,14 @@
 import PackageDescription
 
 let package = Package(
-    name: "N2StepSDK",
+    name: "CrowdNotifierSDK",
     platforms: [
         .iOS("11.0"),
     ],
     products: [
         .library(
-            name: "N2StepSDK",
-            targets: ["N2StepSDK"]
+            name: "CrowdNotifierSDK",
+            targets: ["CrowdNotifierSDK"]
         ),
         .library(
             name: "Clibsodium",
@@ -26,7 +26,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "N2StepSDK",
+            name: "CrowdNotifierSDK",
             dependencies: ["SwiftProtobuf", "Clibsodium"],
             exclude: ["libsodium", "Info.plist"]
         ),
@@ -35,8 +35,8 @@ let package = Package(
             path: "Clibsodium.xcframework"
         ),
         .testTarget(
-            name: "N2StepSDKTests",
-            dependencies: ["N2StepSDK"]
+            name: "CrowdNotifierSDKTests",
+            dependencies: ["CrowdNotifierSDK"]
         ),
     ]
 )
