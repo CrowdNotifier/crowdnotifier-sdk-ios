@@ -1,7 +1,6 @@
 # CrowdNotifierSDK for iOS
 [![Swift Package Manager compatible](https://img.shields.io/badge/SPM-%E2%9C%93-brightgreen.svg?style=flat)](https://github.com/apple/swift-package-manager)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://github.com/CrowdNotifier/crowdnotifier-sdk-ios/blob/develop/LICENSE)
-![build](https://github.com/CrowdNotifier/crowdnotifier-sdk-ios/workflows/build/badge.svg)
 
 ## CrowdNotifier
 This repository implements a secure, decentralized, privacy-preserving presence tracing system. The proposal aims to simplify and accelerate the process of notifying individuals that shared a semi-public location with a SARS-CoV-2-positive person for a prolonged time without introducing new risks for users and locations. Existing proximity tracing systems (apps for contact tracing such as SwissCovid, Corona Warn App, and Immuni) notify only a subset of these people: those that were close enough for long enough. Current events have shown the need to notify all people that shared a space with a SARS-CoV-2-positive person. The proposed system aims to provide an alternative to increasing use of apps with similar intentions based on invasive collection or that are prone to abuse by authorities. The preliminary design aims to minimize privacy and security risks for individuals and communities, while guaranteeing the highest level of data protection and good usability and deployability.
