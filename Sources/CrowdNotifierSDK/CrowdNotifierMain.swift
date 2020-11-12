@@ -19,35 +19,27 @@ class CrowdNotifierMain {
         qrCodeParser = QRCodeParser()
     }
 
-    func getVenueInfo(qrCode: String) -> Result<VenueInfo, CrowdNotifierError> {
-        return qrCodeParser.extractVenueInformation(from: qrCode)
+    func getVenueInfo(qrCode: String, baseUrl: String) -> Result<VenueInfo, CrowdNotifierError> {
+        return qrCodeParser.extractVenueInformation(from: qrCode, baseUrl: baseUrl)
     }
 
-    func addCheckin(qrCode: String, arrivalTime: Date, departureTime: Date) -> Result<(VenueInfo, String), CrowdNotifierError> {
-        addOrUpdateCheckin(qrCode: qrCode, newArrivalTime: arrivalTime, newDepartureTime: departureTime)
+    func addCheckin(arrivalTime: Date, departureTime: Date, notificationKey: Bytes, venuePublicKey: Bytes) -> Result<String, CrowdNotifierError> {
+        return addOrUpdateCheckin(arrivalTime: arrivalTime, departureTime: departureTime, notificationKey: notificationKey, venuePublicKey: venuePublicKey)
     }
 
-    func updateCheckin(checkinId: String, qrCode: String, newArrivalTime: Date, newDepartureTime: Date) -> Result<(VenueInfo, String), CrowdNotifierError> {
-        addOrUpdateCheckin(qrCode: qrCode, newArrivalTime: newArrivalTime, newDepartureTime: newDepartureTime, checkinId: checkinId)
+    func updateCheckin(checkinId: String, newArrivalTime: Date, newDepartureTime: Date, notificationKey: Bytes, venuePublicKey: Bytes) -> Result< String, CrowdNotifierError> {
+        return addOrUpdateCheckin(arrivalTime: newArrivalTime, departureTime: newDepartureTime, notificationKey: notificationKey, venuePublicKey: venuePublicKey, checkinId: checkinId)
     }
 
-    private func addOrUpdateCheckin(qrCode: String, newArrivalTime: Date, newDepartureTime: Date, checkinId: String? = nil) -> Result<(VenueInfo, String), CrowdNotifierError> {
-        let result = qrCodeParser.extractVenueInformation(from: qrCode)
+    private func addOrUpdateCheckin(arrivalTime: Date, departureTime: Date, notificationKey: Bytes, venuePublicKey: Bytes, checkinId: String? = nil) -> Result<String, CrowdNotifierError> {
 
-        switch result {
-        case let .success(venueInfo):
-
-            guard let (epk, h, ctxt) = CryptoFunctions.createCheckinEntry(venueInfo: venueInfo, arrivalTime: newArrivalTime, departureTime: newDepartureTime) else {
-                return .failure(.encryptionError)
-            }
-
-            let id = checkinStorage.addCheckinEntry(arrivalTime: newArrivalTime, epk: epk, h: h, ctxt: ctxt, overrideEntryWithID: checkinId)
-
-            return .success((venueInfo, id))
-
-        case let .failure(error):
-            return .failure(error)
+        guard let (epk, h, ctxt) = CryptoFunctions.createCheckinEntry(notificationKey: notificationKey, venuePublicKey: venuePublicKey, arrivalTime: arrivalTime, departureTime: departureTime) else {
+            return .failure(.encryptionError)
         }
+
+        let id = checkinStorage.addCheckinEntry(arrivalTime: arrivalTime, epk: epk, h: h, ctxt: ctxt, overrideEntryWithID: checkinId)
+
+        return .success(id)
     }
 
     func checkForMatches(publishedSKs: [ProblematicEventInfo]) -> [ExposureEvent] {

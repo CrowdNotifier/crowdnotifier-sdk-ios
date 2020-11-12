@@ -12,9 +12,9 @@ import Clibsodium
 import Foundation
 
 class CryptoFunctions {
-    static func createCheckinEntry(venueInfo: VenueInfo, arrivalTime: Date, departureTime: Date) -> (epk: Bytes, h: Bytes, ctxt: Bytes)? {
+    static func createCheckinEntry(notificationKey: Bytes, venuePublicKey: Bytes, arrivalTime: Date, departureTime: Date) -> (epk: Bytes, h: Bytes, ctxt: Bytes)? {
         var pk_venue_kx = Bytes(count: crypto_box_publickeybytes())
-        var result = crypto_sign_ed25519_pk_to_curve25519(&pk_venue_kx, venueInfo.publicKey.bytes)
+        var result = crypto_sign_ed25519_pk_to_curve25519(&pk_venue_kx, venuePublicKey)
 
         if result != 0 {
             print("crypto_sign_ed25519_pk_to_curve25519 failed")
@@ -40,7 +40,7 @@ class CryptoFunctions {
             return nil
         }
 
-        let payload = CheckinPayload(arrivalTime: arrivalTime, departureTime: departureTime, notificationKey: venueInfo.notificationKey)
+        let payload = CheckinPayload(arrivalTime: arrivalTime, departureTime: departureTime, notificationKey: notificationKey.data)
 
         guard let m = try? JSONEncoder().encode(payload) else {
             print("Could not encode payload")

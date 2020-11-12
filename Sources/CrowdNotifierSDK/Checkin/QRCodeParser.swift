@@ -12,9 +12,14 @@ import Clibsodium
 import Foundation
 
 class QRCodeParser {
-    func extractVenueInformation(from qrCode: String) -> Result<VenueInfo, CrowdNotifierError> {
+    func extractVenueInformation(from qrCode: String, baseUrl: String) -> Result<VenueInfo, CrowdNotifierError> {
         guard let url = URL(string: qrCode) else {
             print("Could not create url from string: \(qrCode)")
+            return .failure(.invalidQRCode)
+        }
+
+        guard url.absoluteString.starts(with: baseUrl) else {
+            print("Base URL does not match \(baseUrl)")
             return .failure(.invalidQRCode)
         }
 

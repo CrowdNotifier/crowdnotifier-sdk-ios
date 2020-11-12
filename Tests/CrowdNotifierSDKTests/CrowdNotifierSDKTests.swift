@@ -16,8 +16,10 @@ import XCTest
 class CrowdNotifierSDKTests: XCTestCase {
     private let storage: CheckinStorage = .shared
 
-    private let qrCode = "https://qr-dev.n2s.ch/#CAESZAgBEiDwR2Oj0B1_XP1WeCfXRFIN0FylcYGP27HsEhANnE0KExoKSG9tZW9mZmljZSIHWnVoYXVzZSoFQsO8cm8wADogIiO_NrgF7RtaIoQqvPhCN1GoCKGK93p3XNYV7QJ7AjgaQNssfMm583dl88rNfgD8ZPMyRna_xO87g3sNp8zhYi9cbRJ1TKB_UWTBFiO5Tx9G0xbSSOx7qW54wrPwUzjDYQ4"
-    private let wrongQrCode = "https://qr-dev.n2s.ch/#CAESZAgBEiDwR2Oj0B1_XP1WeCfRFIN0FylcYGP27HsEhANnE0KExoKSG9tZW9mZmljZSIHWnVoYXVzZSoFQsO8cm8wADogIiO_NrgF7RtaIoQqvPhCN1GoCKGK93p3XNYV7QJ7AjgaQNssfMm583dl88rNfgD8ZPMyRna_xO87g3sNp8zhYi9cbRJ1TKB_UWTBFiO5Tx9G0xbSSOx7qW54wrPwUzjDYQ4"
+    private let baseUrl = "https://qr.notify-me.ch"
+
+    private let qrCode = "https://qr.notify-me.ch/#CAESZAgBEiDwR2Oj0B1_XP1WeCfXRFIN0FylcYGP27HsEhANnE0KExoKSG9tZW9mZmljZSIHWnVoYXVzZSoFQsO8cm8wADogIiO_NrgF7RtaIoQqvPhCN1GoCKGK93p3XNYV7QJ7AjgaQNssfMm583dl88rNfgD8ZPMyRna_xO87g3sNp8zhYi9cbRJ1TKB_UWTBFiO5Tx9G0xbSSOx7qW54wrPwUzjDYQ4"
+    private let wrongQrCode = "https://qr.notify-me.ch/#CAESZAgBEiDwR2Oj0B1_XP1WeCfRFIN0FylcYGP27HsEhANnE0KExoKSG9tZW9mZmljZSIHWnVoYXVzZSoFQsO8cm8wADogIiO_NrgF7RtaIoQqvPhCN1GoCKGK93p3XNYV7QJ7AjgaQNssfMm583dl88rNfgD8ZPMyRna_xO87g3sNp8zhYi9cbRJ1TKB_UWTBFiO5Tx9G0xbSSOx7qW54wrPwUzjDYQ4"
 
     override class func setUp() {
         CrowdNotifier.initialize()
@@ -25,7 +27,7 @@ class CrowdNotifierSDKTests: XCTestCase {
     }
 
     func testCorrectQrCode() {
-        let result = CrowdNotifier.getVenueInfo(qrCode: qrCode)
+        let result = CrowdNotifier.getVenueInfo(qrCode: qrCode, baseUrl: baseUrl)
 
         switch result {
         case let .success(venue):
@@ -33,45 +35,39 @@ class CrowdNotifierSDKTests: XCTestCase {
             XCTAssert(venue.location == "Zuhause", "Wrong venue location")
             XCTAssert(venue.room == "Büro", "Wrong venue room")
             XCTAssert(venue.venueType == .other, "Wrong venue type")
+
+            let arrivalTime = Date()
+            let checkinResult = CrowdNotifier.addCheckin(arrivalTime: arrivalTime, departureTime: arrivalTime.addingTimeInterval(.hour * 2), notificationKey: venue.notificationKey.bytes, venuePublicKey: venue.publicKey.bytes)
+
+            switch checkinResult {
+            case .success(let id):
+                XCTAssert(storage.allEntries.count == 1, "Storage should contain 1 checkin entry")
+
+                guard let entry = storage.allEntries[id] else {
+                    XCTFail("Entry stored with wrong id")
+                    return
+                }
+
+                XCTAssert(entry.id == id, "Entry has wrong id")
+                XCTAssert(entry.daysSince1970 == arrivalTime.daysSince1970, "Wrong daysSince1970 value")
+
+            case .failure(_):
+                XCTFail("Checkin with correct QR Code should succeed")
+            }
+
         case .failure:
             XCTFail("QR Code should be correct")
         }
     }
 
     func testWrongQrCode() {
-        let result = CrowdNotifier.getVenueInfo(qrCode: wrongQrCode)
+        let result = CrowdNotifier.getVenueInfo(qrCode: wrongQrCode, baseUrl: baseUrl)
 
         switch result {
         case .success:
             XCTFail("QR Code should not be correct")
         case let .failure(error):
             XCTAssert(error == .invalidQRCode, "Error case should be .invalidQRCode")
-        }
-    }
-
-    func testAddCheckin() {
-        let arrivalTime = Date()
-        let result = CrowdNotifier.addCheckin(qrCode: qrCode, arrivalTime: arrivalTime, departureTime: arrivalTime.addingTimeInterval(.hour * 2))
-
-        switch result {
-        case .success(let (venue, id)):
-            XCTAssert(venue.name == "Homeoffice", "Wrong venue name")
-            XCTAssert(venue.location == "Zuhause", "Wrong venue location")
-            XCTAssert(venue.room == "Büro", "Wrong venue room")
-            XCTAssert(venue.venueType == .other, "Wrong venue type")
-
-            XCTAssert(storage.allEntries.count == 1, "Storage should contain 1 checkin entry")
-
-            guard let entry = storage.allEntries[id] else {
-                XCTFail("Entry stored with wrong id")
-                return
-            }
-
-            XCTAssert(entry.id == id, "Entry has wrong id")
-            XCTAssert(entry.daysSince1970 == arrivalTime.daysSince1970, "Wrong daysSince1970 value")
-
-        case .failure:
-            XCTFail("Checkin with correct QR Code should succeed")
         }
     }
 

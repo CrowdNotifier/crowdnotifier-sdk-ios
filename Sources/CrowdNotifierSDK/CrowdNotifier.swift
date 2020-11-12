@@ -21,19 +21,19 @@ public enum CrowdNotifier {
         instance = CrowdNotifierMain()
     }
 
-    public static func getVenueInfo(qrCode: String) -> Result<VenueInfo, CrowdNotifierError> {
+    public static func getVenueInfo(qrCode: String, baseUrl: String) -> Result<VenueInfo, CrowdNotifierError> {
         instancePrecondition()
-        return instance.getVenueInfo(qrCode: qrCode)
+        return instance.getVenueInfo(qrCode: qrCode, baseUrl: baseUrl)
     }
 
-    public static func addCheckin(qrCode: String, arrivalTime: Date, departureTime: Date) -> Result<(VenueInfo, String), CrowdNotifierError> {
+    public static func addCheckin(arrivalTime: Date, departureTime: Date, notificationKey: Bytes, venuePublicKey: Bytes) -> Result<String, CrowdNotifierError> {
         instancePrecondition()
-        return instance.addCheckin(qrCode: qrCode, arrivalTime: arrivalTime, departureTime: departureTime)
+        return instance.addCheckin(arrivalTime: arrivalTime, departureTime: departureTime, notificationKey: notificationKey, venuePublicKey: venuePublicKey)
     }
 
-    public static func updateCheckin(checkinId: String, qrCode: String, newArrivalTime: Date, newDepartureTime: Date) -> Result<(VenueInfo, String), CrowdNotifierError> {
+    public static func updateCheckin(checkinId: String, newArrivalTime: Date, newDepartureTime: Date, notificationKey: Bytes, venuePublicKey: Bytes) -> Result<String, CrowdNotifierError> {
         instancePrecondition()
-        return instance.updateCheckin(checkinId: checkinId, qrCode: qrCode, newArrivalTime: newArrivalTime, newDepartureTime: newDepartureTime)
+        return instance.updateCheckin(checkinId: checkinId, newArrivalTime: newArrivalTime, newDepartureTime: newDepartureTime, notificationKey: notificationKey, venuePublicKey: venuePublicKey)
     }
 
     public static func checkForMatches(publishedSKs: [ProblematicEventInfo]) -> [ExposureEvent] {
