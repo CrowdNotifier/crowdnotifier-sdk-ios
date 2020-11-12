@@ -13,7 +13,9 @@ import Foundation
 public struct VenueInfo: Codable {
     public enum VenueType: String, Codable {
         case other = "OTHER"
-        case restaurant = "RESTAURANT"
+        case meetingRoom = "MEETING_ROOM"
+        case cafeteria = "CAFETERIA"
+        case privateParty = "PRIVATE_PARTY"
     }
 
     public let publicKey: Data
@@ -27,8 +29,10 @@ public struct VenueInfo: Codable {
 extension VenueInfo.VenueType {
     static func fromVenueType(_ type: QRCodeContent.VenueType) -> VenueInfo.VenueType {
         switch type {
-        case .restaurant: return .restaurant
         case .other: return .other
+        case .meetingRoom: return .meetingRoom
+        case .cafeteria: return .cafeteria
+        case .privateParty: return .privateParty
         }
     }
 }

@@ -14,7 +14,9 @@ message QRCodeContent {
     optional string room = 5;
     enum VenueType {
         OTHER = 0;
-        RESTAURANT = 1;
+        MEETING_ROOM = 1;
+        CAFETERIA = 2;
+        PRIVATE_PARTY = 3;
     };
     required VenueType venueType = 6;
     required bytes notificationKey = 7;
