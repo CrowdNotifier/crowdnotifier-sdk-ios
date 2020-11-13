@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "CrowdNotifierSDK",
     platforms: [
-        .iOS("11.0"),
+        .iOS("10.0"),
     ],
     products: [
         .library(
