@@ -15,7 +15,14 @@ public struct VenueInfo: Codable {
         case other = "OTHER"
         case meetingRoom = "MEETING_ROOM"
         case cafeteria = "CAFETERIA"
-        case privateParty = "PRIVATE_PARTY"
+        case privateEvent = "PRIVATE_EVENT"
+        case canteen = "CANTEEN"
+        case library = "LIBRARY"
+        case lectureRoom = "LECTURE_ROOM"
+        case shop = "SHOP"
+        case gym = "GYM"
+        case kitchenArea = "KITCHEN_AREA"
+        case officeSpace = "OFFICE_SPACE"
     }
 
     public let publicKey: Data
@@ -29,10 +36,28 @@ public struct VenueInfo: Codable {
 extension VenueInfo.VenueType {
     static func fromVenueType(_ type: QRCodeContent.VenueType) -> VenueInfo.VenueType {
         switch type {
-        case .other: return .other
-        case .meetingRoom: return .meetingRoom
-        case .cafeteria: return .cafeteria
-        case .privateParty: return .privateParty
+        case .other:
+            return .other
+        case .meetingRoom:
+            return .meetingRoom
+        case .cafeteria:
+            return .cafeteria
+        case .privateEvent:
+            return privateEvent
+        case .canteen:
+            return canteen
+        case .library:
+            return library
+        case .lectureRoom:
+            return lectureRoom
+        case .shop:
+            return shop
+        case .gym:
+            return gym
+        case .kitchenArea:
+            return kitchenArea
+        case .officeSpace:
+            return officeSpace
         }
     }
 }

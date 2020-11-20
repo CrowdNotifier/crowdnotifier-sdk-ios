@@ -136,7 +136,14 @@ struct QRCodeContent {
     case other // = 0
     case meetingRoom // = 1
     case cafeteria // = 2
-    case privateParty // = 3
+    case privateEvent // = 3
+    case canteen // = 4
+    case library // = 5
+    case lectureRoom // = 6
+    case shop // = 7
+    case gym // = 8
+    case kitchenArea // = 9
+    case officeSpace // = 10
 
     init() {
       self = .other
@@ -147,7 +154,14 @@ struct QRCodeContent {
       case 0: self = .other
       case 1: self = .meetingRoom
       case 2: self = .cafeteria
-      case 3: self = .privateParty
+      case 3: self = .privateEvent
+      case 4: self = .canteen
+      case 5: self = .library
+      case 6: self = .lectureRoom
+      case 7: self = .shop
+      case 8: self = .gym
+      case 9: self = .kitchenArea
+      case 10: self = .officeSpace
       default: return nil
       }
     }
@@ -157,7 +171,14 @@ struct QRCodeContent {
       case .other: return 0
       case .meetingRoom: return 1
       case .cafeteria: return 2
-      case .privateParty: return 3
+      case .privateEvent: return 3
+      case .canteen: return 4
+      case .library: return 5
+      case .lectureRoom: return 6
+      case .shop: return 7
+      case .gym: return 8
+      case .kitchenArea: return 9
+      case .officeSpace: return 10
       }
     }
 
@@ -319,6 +340,13 @@ extension QRCodeContent.VenueType: SwiftProtobuf._ProtoNameProviding {
     0: .same(proto: "OTHER"),
     1: .same(proto: "MEETING_ROOM"),
     2: .same(proto: "CAFETERIA"),
-    3: .same(proto: "PRIVATE_PARTY"),
+    3: .same(proto: "PRIVATE_EVENT"),
+    4: .same(proto: "CANTEEN"),
+    5: .same(proto: "LIBRARY"),
+    6: .same(proto: "LECTURE_ROOM"),
+    7: .same(proto: "SHOP"),
+    8: .same(proto: "GYM"),
+    9: .same(proto: "KITCHEN_AREA"),
+    10: .same(proto: "OFFICE_SPACE"),
   ]
 }
