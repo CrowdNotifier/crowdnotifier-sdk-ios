@@ -129,6 +129,24 @@ struct QRCodeContent {
   /// Clears the value of `notificationKey`. Subsequent reads from it will return its default value.
   mutating func clearNotificationKey() {self._notificationKey = nil}
 
+  var validFrom: UInt64 {
+    get {return _validFrom ?? 0}
+    set {_validFrom = newValue}
+  }
+  /// Returns true if `validFrom` has been explicitly set.
+  var hasValidFrom: Bool {return self._validFrom != nil}
+  /// Clears the value of `validFrom`. Subsequent reads from it will return its default value.
+  mutating func clearValidFrom() {self._validFrom = nil}
+
+  var validTo: UInt64 {
+    get {return _validTo ?? 0}
+    set {_validTo = newValue}
+  }
+  /// Returns true if `validTo` has been explicitly set.
+  var hasValidTo: Bool {return self._validTo != nil}
+  /// Clears the value of `validTo`. Subsequent reads from it will return its default value.
+  mutating func clearValidTo() {self._validTo = nil}
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   enum VenueType: SwiftProtobuf.Enum {
@@ -193,6 +211,8 @@ struct QRCodeContent {
   fileprivate var _room: String? = nil
   fileprivate var _venueType: QRCodeContent.VenueType? = nil
   fileprivate var _notificationKey: Data? = nil
+  fileprivate var _validFrom: UInt64? = nil
+  fileprivate var _validTo: UInt64? = nil
 }
 
 #if swift(>=4.2)
@@ -267,6 +287,8 @@ extension QRCodeContent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     5: .same(proto: "room"),
     6: .same(proto: "venueType"),
     7: .same(proto: "notificationKey"),
+    8: .same(proto: "validFrom"),
+    9: .same(proto: "validTo"),
   ]
 
   public var isInitialized: Bool {
@@ -292,6 +314,8 @@ extension QRCodeContent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
       case 5: try { try decoder.decodeSingularStringField(value: &self._room) }()
       case 6: try { try decoder.decodeSingularEnumField(value: &self._venueType) }()
       case 7: try { try decoder.decodeSingularBytesField(value: &self._notificationKey) }()
+      case 8: try { try decoder.decodeSingularUInt64Field(value: &self._validFrom) }()
+      case 9: try { try decoder.decodeSingularUInt64Field(value: &self._validTo) }()
       default: break
       }
     }
@@ -319,6 +343,12 @@ extension QRCodeContent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if let v = self._notificationKey {
       try visitor.visitSingularBytesField(value: v, fieldNumber: 7)
     }
+    if let v = self._validFrom {
+      try visitor.visitSingularUInt64Field(value: v, fieldNumber: 8)
+    }
+    if let v = self._validTo {
+      try visitor.visitSingularUInt64Field(value: v, fieldNumber: 9)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -330,6 +360,8 @@ extension QRCodeContent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if lhs._room != rhs._room {return false}
     if lhs._venueType != rhs._venueType {return false}
     if lhs._notificationKey != rhs._notificationKey {return false}
+    if lhs._validFrom != rhs._validFrom {return false}
+    if lhs._validTo != rhs._validTo {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

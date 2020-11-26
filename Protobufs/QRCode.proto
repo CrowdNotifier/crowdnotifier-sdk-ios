@@ -27,4 +27,6 @@ message QRCodeContent {
   };
   required VenueType venueType = 6;
   required bytes notificationKey = 7;
+  optional uint64 validFrom = 8;
+  optional uint64 validTo = 9;
 }

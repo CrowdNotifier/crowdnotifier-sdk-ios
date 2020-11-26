@@ -12,6 +12,8 @@ import Clibsodium
 import Foundation
 
 class QRCodeParser {
+    private static let currentVersion = 1
+
     func extractVenueInformation(from qrCode: String, baseUrl: String) -> Result<VenueInfo, CrowdNotifierError> {
         guard let url = URL(string: qrCode) else {
             print("Could not create url from string: \(qrCode)")
@@ -33,6 +35,18 @@ class QRCodeParser {
             return .failure(.invalidQRCode)
         }
 
+        let fromDate = wrapper.content.validFrom
+        let toDate = wrapper.content.validTo
+
+        if fromDate != 0 && Date() < Date(millisecondsSince1970: Int(fromDate)) {
+            return .failure(.validFromError)
+        }
+
+        if toDate != 0 && Date() > Date(millisecondsSince1970: Int(toDate)) {
+            return .failure(.validToError)
+        }
+
+
         // Verify signature
         let signature = wrapper.signature.bytes
         let pk = wrapper.content.publicKey.bytes
@@ -45,6 +59,10 @@ class QRCodeParser {
         }
 
         let code = wrapper.content
+
+        if code.version > QRCodeParser.currentVersion {
+            return .failure(.invalidQRCodeVersion)
+        }
 
         let info = VenueInfo(publicKey: code.publicKey,
                              notificationKey: code.notificationKey,
