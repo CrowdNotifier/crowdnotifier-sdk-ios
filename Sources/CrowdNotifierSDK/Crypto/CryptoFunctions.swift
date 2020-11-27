@@ -96,4 +96,17 @@ class CryptoFunctions {
 
         return try? JSONDecoder().decode(CheckinPayload.self, from: data.data)
     }
+
+    static func decryptMessage(message: Bytes, nonce: Bytes, key: Bytes) -> String? {
+
+        var data = Bytes(count: message.count - crypto_secretbox_macbytes())
+        let result = crypto_secretbox_open_easy(&data, message, UInt64(message.count), nonce, key)
+
+        if result != 0 {
+            print("Error during crypto_box_open_easy")
+            return nil
+        }
+
+        return try? JSONDecoder().decode(String.self, from: data.data)
+    }
 }

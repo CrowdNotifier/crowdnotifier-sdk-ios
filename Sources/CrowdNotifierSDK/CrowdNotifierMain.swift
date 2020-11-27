@@ -68,7 +68,10 @@ class CrowdNotifierMain {
                         let departure = payload.departureTime.millisecondsSince1970
                         // Check if times actually overlap
                         if arrival <= event.exit.millisecondsSince1970, departure >= event.entry.millisecondsSince1970 {
-                            matches.append(ExposureEvent(checkinId: entry.id, arrivalTime: payload.arrivalTime, departureTime: payload.departureTime, message: "Match!"))
+
+                            let m = CryptoFunctions.decryptMessage(message: event.message, nonce: event.nonce, key: payload.notificationKey.bytes) ?? ""
+
+                            matches.append(ExposureEvent(checkinId: entry.id, arrivalTime: payload.arrivalTime, departureTime: payload.departureTime, message: m))
                             continue
                         }
                     }

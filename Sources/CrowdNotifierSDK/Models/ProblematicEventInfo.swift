@@ -15,11 +15,13 @@ public struct ProblematicEventInfo {
     public let entry: Date
     public let exit: Date
     public let message: Bytes
+    public let nonce: Bytes
 
-    public init(privateKey: Bytes, entry: Date, exit: Date, message: Bytes) {
+    public init(privateKey: Bytes, entry: Date, exit: Date, message: Bytes, nonce: Bytes) {
         self.privateKey = privateKey
         self.entry = entry
         self.exit = exit
         self.message = message
+        self.nonce = nonce
     }
 }
