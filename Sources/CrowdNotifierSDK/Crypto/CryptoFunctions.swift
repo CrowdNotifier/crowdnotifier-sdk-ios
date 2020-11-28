@@ -107,6 +107,6 @@ class CryptoFunctions {
             return nil
         }
 
-        return try? JSONDecoder().decode(String.self, from: data.data)
+        return String(data: data.data, encoding: .utf8)
     }
 }
