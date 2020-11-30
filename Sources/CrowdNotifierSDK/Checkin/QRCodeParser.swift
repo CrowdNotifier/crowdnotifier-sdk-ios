@@ -35,41 +35,36 @@ class QRCodeParser {
             return .failure(.invalidQRCode)
         }
 
-        let fromDate = wrapper.content.validFrom
-        let toDate = wrapper.content.validTo
+        // check from date
+        let fromDate = Date(millisecondsSince1970: Int(wrapper.content.validFrom))
 
-        if fromDate != 0 && Date() < Date(millisecondsSince1970: Int(fromDate)) {
+        if Date() < fromDate {
             return .failure(.validFromError)
         }
 
-        if toDate != 0 && Date() > Date(millisecondsSince1970: Int(toDate)) {
+        // check to date
+        let toDate = Date(millisecondsSince1970: Int(wrapper.content.validTo))
+
+        if Date() > toDate {
             return .failure(.validToError)
         }
 
-
-        // Verify signature
-        let signature = wrapper.signature.bytes
-        let pk = wrapper.content.publicKey.bytes
-        var message = (try? wrapper.content.serializedData())?.bytes ?? []
-
-        let result = crypto_sign_ed25519_verify_detached(signature, &message, UInt64(message.count), pk)
-
-        guard result == 0 else {
-            return .failure(.invalidSignature)
-        }
-
+        // check version
         let code = wrapper.content
 
-        if code.version > QRCodeParser.currentVersion {
+        if wrapper.version > QRCodeParser.currentVersion {
             return .failure(.invalidQRCodeVersion)
         }
 
-        let info = VenueInfo(publicKey: code.publicKey,
+        let info = VenueInfo(publicKey: wrapper.publicKey,
+                             r1: wrapper.r1,
                              notificationKey: code.notificationKey,
                              name: code.name,
                              location: code.location,
                              room: code.hasRoom ? code.room : nil,
-                             venueType: .fromVenueType(code.venueType))
+                             venueType: .fromVenueType(code.venueType),
+                             validFrom: fromDate,
+                             validTo: toDate)
 
         return .success(info)
     }

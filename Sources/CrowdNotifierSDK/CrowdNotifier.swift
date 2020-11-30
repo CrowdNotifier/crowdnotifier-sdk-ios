@@ -26,14 +26,14 @@ public enum CrowdNotifier {
         return instance.getVenueInfo(qrCode: qrCode, baseUrl: baseUrl)
     }
 
-    public static func addCheckin(arrivalTime: Date, departureTime: Date, notificationKey: Bytes, venuePublicKey: Bytes) -> Result<String, CrowdNotifierError> {
+    public static func addCheckin(venueInfo: VenueInfo, arrivalTime: Date, departureTime: Date) -> Result<String, CrowdNotifierError> {
         instancePrecondition()
-        return instance.addCheckin(arrivalTime: arrivalTime, departureTime: departureTime, notificationKey: notificationKey, venuePublicKey: venuePublicKey)
+        return instance.addCheckin(venueInfo: venueInfo, arrivalTime: arrivalTime, departureTime: departureTime)
     }
 
-    public static func updateCheckin(checkinId: String, newArrivalTime: Date, newDepartureTime: Date, notificationKey: Bytes, venuePublicKey: Bytes) -> Result<String, CrowdNotifierError> {
+    public static func updateCheckin(checkinId: String, venueInfo: VenueInfo, newArrivalTime: Date, newDepartureTime: Date) -> Result<String, CrowdNotifierError> {
         instancePrecondition()
-        return instance.updateCheckin(checkinId: checkinId, newArrivalTime: newArrivalTime, newDepartureTime: newDepartureTime, notificationKey: notificationKey, venuePublicKey: venuePublicKey)
+        return instance.updateCheckin(checkinId: checkinId, venueInfo: venueInfo, newArrivalTime: newArrivalTime, newDepartureTime: newDepartureTime)
     }
 
     public static func checkForMatches(publishedSKs: [ProblematicEventInfo]) -> [ExposureEvent] {

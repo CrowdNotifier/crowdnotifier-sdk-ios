@@ -26,11 +26,14 @@ public struct VenueInfo: Codable {
     }
 
     public let publicKey: Data
+    public let r1: Data
     public let notificationKey: Data
     public let name: String
     public let location: String
     public let room: String?
     public let venueType: VenueInfo.VenueType
+    public let validFrom: Date
+    public let validTo: Date
 }
 
 extension VenueInfo.VenueType {
@@ -61,3 +64,33 @@ extension VenueInfo.VenueType {
         }
     }
 }
+
+extension QRCodeContent.VenueType {
+    static func fromVenueType(_ type: VenueInfo.VenueType) -> QRCodeContent.VenueType {
+        switch type {
+        case .other:
+            return .other
+        case .meetingRoom:
+            return .meetingRoom
+        case .cafeteria:
+            return .cafeteria
+        case .privateEvent:
+            return privateEvent
+        case .canteen:
+            return canteen
+        case .library:
+            return library
+        case .lectureRoom:
+            return lectureRoom
+        case .shop:
+            return shop
+        case .gym:
+            return gym
+        case .kitchenArea:
+            return kitchenArea
+        case .officeSpace:
+            return officeSpace
+        }
+    }
+}
+

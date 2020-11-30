@@ -23,17 +23,17 @@ class CrowdNotifierMain {
         return qrCodeParser.extractVenueInformation(from: qrCode, baseUrl: baseUrl)
     }
 
-    func addCheckin(arrivalTime: Date, departureTime: Date, notificationKey: Bytes, venuePublicKey: Bytes) -> Result<String, CrowdNotifierError> {
-        return addOrUpdateCheckin(arrivalTime: arrivalTime, departureTime: departureTime, notificationKey: notificationKey, venuePublicKey: venuePublicKey)
+    func addCheckin(venueInfo: VenueInfo, arrivalTime: Date, departureTime: Date) -> Result<String, CrowdNotifierError> {
+        return addOrUpdateCheckin(venueInfo: venueInfo, arrivalTime: arrivalTime, departureTime: departureTime)
     }
 
-    func updateCheckin(checkinId: String, newArrivalTime: Date, newDepartureTime: Date, notificationKey: Bytes, venuePublicKey: Bytes) -> Result< String, CrowdNotifierError> {
-        return addOrUpdateCheckin(arrivalTime: newArrivalTime, departureTime: newDepartureTime, notificationKey: notificationKey, venuePublicKey: venuePublicKey, checkinId: checkinId)
+    func updateCheckin(checkinId: String, venueInfo: VenueInfo, newArrivalTime: Date, newDepartureTime: Date) -> Result< String, CrowdNotifierError> {
+        return addOrUpdateCheckin(checkinId: checkinId, venueInfo: venueInfo, arrivalTime: newArrivalTime, departureTime: newDepartureTime)
     }
 
-    private func addOrUpdateCheckin(arrivalTime: Date, departureTime: Date, notificationKey: Bytes, venuePublicKey: Bytes, checkinId: String? = nil) -> Result<String, CrowdNotifierError> {
+    private func addOrUpdateCheckin(checkinId: String? = nil, venueInfo: VenueInfo, arrivalTime: Date, departureTime: Date) -> Result<String, CrowdNotifierError> {
 
-        guard let (epk, h, ctxt) = CryptoFunctions.createCheckinEntry(notificationKey: notificationKey, venuePublicKey: venuePublicKey, arrivalTime: arrivalTime, departureTime: departureTime) else {
+        guard let (epk, h, ctxt) = CryptoFunctions.createCheckinEntry(venueInfo: venueInfo, arrivalTime: arrivalTime, departureTime: departureTime) else {
             return .failure(.encryptionError)
         }
 
@@ -47,33 +47,34 @@ class CrowdNotifierMain {
 
         var matches = [ExposureEvent]()
 
-        for event in publishedSKs {
-            guard let sk_venue_kx = CryptoFunctions.privateKeyEd25519ToCurve25519(privateKey: event.privateKey) else {
-                continue
-            }
-
-            for entry in possibleMatches {
-                guard let tagPrime = CryptoFunctions.computeSharedKey(privateKey: sk_venue_kx, publicKey: entry.epk.bytes) else {
-                    continue
-                }
-
+        for event in publishedSKs
+        {
+            for entry in possibleMatches
+            {
                 guard !matches.map({ $0.checkinId }).contains(entry.id) else {
                     continue
                 }
 
-                if tagPrime == entry.h.bytes {
-                    // We have a potential match!
-                    if let payload = CryptoFunctions.decryptPayload(ciphertext: entry.ctxt.bytes, privateKey: sk_venue_kx) {
-                        let arrival = payload.arrivalTime.millisecondsSince1970
-                        let departure = payload.departureTime.millisecondsSince1970
-                        // Check if times actually overlap
-                        if arrival <= event.exit.millisecondsSince1970, departure >= event.entry.millisecondsSince1970 {
+                guard let tagPrime = CryptoFunctions.computeSharedKey(privateKey: event.privateKey, publicKey: entry.epk.bytes) else {
+                    continue
+                }
 
-                            let m = CryptoFunctions.decryptMessage(message: event.message, nonce: event.nonce, key: payload.notificationKey.bytes) ?? ""
+                // check tag prime
+                if tagPrime != entry.h.bytes {
+                    continue
+                }
+                
+                // We have a potential match!
+                if let payload = CryptoFunctions.decryptPayload(ciphertext: entry.ctxt.bytes, privateKey: event.privateKey, r2: event.r2) {
+                    let arrival = payload.arrivalTime.millisecondsSince1970
+                    let departure = payload.departureTime.millisecondsSince1970
+                    // Check if times actually overlap
+                    if arrival <= event.exit.millisecondsSince1970, departure >= event.entry.millisecondsSince1970 {
 
-                            matches.append(ExposureEvent(checkinId: entry.id, arrivalTime: payload.arrivalTime, departureTime: payload.departureTime, message: m))
-                            continue
-                        }
+                        let m = CryptoFunctions.decryptMessage(message: event.message, nonce: event.nonce, key: payload.notificationKey.bytes) ?? ""
+
+                        matches.append(ExposureEvent(checkinId: entry.id, arrivalTime: payload.arrivalTime, departureTime: payload.departureTime, message: m))
+                        continue
                     }
                 }
             }

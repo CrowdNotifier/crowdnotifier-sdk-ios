@@ -12,13 +12,15 @@ import Foundation
 
 public struct ProblematicEventInfo {
     public let privateKey: Bytes
+    public let r2: Bytes
     public let entry: Date
     public let exit: Date
     public let message: Bytes
     public let nonce: Bytes
 
-    public init(privateKey: Bytes, entry: Date, exit: Date, message: Bytes, nonce: Bytes) {
+    public init(privateKey: Bytes, r2: Bytes, entry: Date, exit: Date, message: Bytes, nonce: Bytes) {
         self.privateKey = privateKey
+        self.r2 = r2
         self.entry = entry
         self.exit = exit
         self.message = message

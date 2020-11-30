@@ -34,6 +34,24 @@ struct QRCodeWrapper {
   /// Clears the value of `version`. Subsequent reads from it will return its default value.
   mutating func clearVersion() {self._version = nil}
 
+  var publicKey: Data {
+    get {return _publicKey ?? Data()}
+    set {_publicKey = newValue}
+  }
+  /// Returns true if `publicKey` has been explicitly set.
+  var hasPublicKey: Bool {return self._publicKey != nil}
+  /// Clears the value of `publicKey`. Subsequent reads from it will return its default value.
+  mutating func clearPublicKey() {self._publicKey = nil}
+
+  var r1: Data {
+    get {return _r1 ?? Data()}
+    set {_r1 = newValue}
+  }
+  /// Returns true if `r1` has been explicitly set.
+  var hasR1: Bool {return self._r1 != nil}
+  /// Clears the value of `r1`. Subsequent reads from it will return its default value.
+  mutating func clearR1() {self._r1 = nil}
+
   var content: QRCodeContent {
     get {return _content ?? QRCodeContent()}
     set {_content = newValue}
@@ -43,46 +61,20 @@ struct QRCodeWrapper {
   /// Clears the value of `content`. Subsequent reads from it will return its default value.
   mutating func clearContent() {self._content = nil}
 
-  var signature: Data {
-    get {return _signature ?? Data()}
-    set {_signature = newValue}
-  }
-  /// Returns true if `signature` has been explicitly set.
-  var hasSignature: Bool {return self._signature != nil}
-  /// Clears the value of `signature`. Subsequent reads from it will return its default value.
-  mutating func clearSignature() {self._signature = nil}
-
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
   fileprivate var _version: Int32? = nil
+  fileprivate var _publicKey: Data? = nil
+  fileprivate var _r1: Data? = nil
   fileprivate var _content: QRCodeContent? = nil
-  fileprivate var _signature: Data? = nil
 }
 
 struct QRCodeContent {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
-
-  var version: Int32 {
-    get {return _version ?? 0}
-    set {_version = newValue}
-  }
-  /// Returns true if `version` has been explicitly set.
-  var hasVersion: Bool {return self._version != nil}
-  /// Clears the value of `version`. Subsequent reads from it will return its default value.
-  mutating func clearVersion() {self._version = nil}
-
-  var publicKey: Data {
-    get {return _publicKey ?? Data()}
-    set {_publicKey = newValue}
-  }
-  /// Returns true if `publicKey` has been explicitly set.
-  var hasPublicKey: Bool {return self._publicKey != nil}
-  /// Clears the value of `publicKey`. Subsequent reads from it will return its default value.
-  mutating func clearPublicKey() {self._publicKey = nil}
 
   var name: String {
     get {return _name ?? String()}
@@ -204,8 +196,6 @@ struct QRCodeContent {
 
   init() {}
 
-  fileprivate var _version: Int32? = nil
-  fileprivate var _publicKey: Data? = nil
   fileprivate var _name: String? = nil
   fileprivate var _location: String? = nil
   fileprivate var _room: String? = nil
@@ -229,14 +219,16 @@ extension QRCodeWrapper: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   static let protoMessageName: String = "QRCodeWrapper"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "version"),
-    2: .same(proto: "content"),
-    3: .same(proto: "signature"),
+    2: .same(proto: "publicKey"),
+    3: .same(proto: "r1"),
+    4: .same(proto: "content"),
   ]
 
   public var isInitialized: Bool {
     if self._version == nil {return false}
+    if self._publicKey == nil {return false}
+    if self._r1 == nil {return false}
     if self._content == nil {return false}
-    if self._signature == nil {return false}
     if let v = self._content, !v.isInitialized {return false}
     return true
   }
@@ -248,8 +240,9 @@ extension QRCodeWrapper: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularInt32Field(value: &self._version) }()
-      case 2: try { try decoder.decodeSingularMessageField(value: &self._content) }()
-      case 3: try { try decoder.decodeSingularBytesField(value: &self._signature) }()
+      case 2: try { try decoder.decodeSingularBytesField(value: &self._publicKey) }()
+      case 3: try { try decoder.decodeSingularBytesField(value: &self._r1) }()
+      case 4: try { try decoder.decodeSingularMessageField(value: &self._content) }()
       default: break
       }
     }
@@ -259,19 +252,23 @@ extension QRCodeWrapper: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if let v = self._version {
       try visitor.visitSingularInt32Field(value: v, fieldNumber: 1)
     }
-    if let v = self._content {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    if let v = self._publicKey {
+      try visitor.visitSingularBytesField(value: v, fieldNumber: 2)
     }
-    if let v = self._signature {
+    if let v = self._r1 {
       try visitor.visitSingularBytesField(value: v, fieldNumber: 3)
+    }
+    if let v = self._content {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: QRCodeWrapper, rhs: QRCodeWrapper) -> Bool {
     if lhs._version != rhs._version {return false}
+    if lhs._publicKey != rhs._publicKey {return false}
+    if lhs._r1 != rhs._r1 {return false}
     if lhs._content != rhs._content {return false}
-    if lhs._signature != rhs._signature {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -280,20 +277,16 @@ extension QRCodeWrapper: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
 extension QRCodeContent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "QRCodeContent"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "version"),
-    2: .same(proto: "publicKey"),
-    3: .same(proto: "name"),
-    4: .same(proto: "location"),
-    5: .same(proto: "room"),
-    6: .same(proto: "venueType"),
-    7: .same(proto: "notificationKey"),
-    8: .same(proto: "validFrom"),
-    9: .same(proto: "validTo"),
+    1: .same(proto: "name"),
+    2: .same(proto: "location"),
+    3: .same(proto: "room"),
+    4: .same(proto: "venueType"),
+    5: .same(proto: "notificationKey"),
+    6: .same(proto: "validFrom"),
+    7: .same(proto: "validTo"),
   ]
 
   public var isInitialized: Bool {
-    if self._version == nil {return false}
-    if self._publicKey == nil {return false}
     if self._name == nil {return false}
     if self._location == nil {return false}
     if self._venueType == nil {return false}
@@ -307,54 +300,44 @@ extension QRCodeContent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularInt32Field(value: &self._version) }()
-      case 2: try { try decoder.decodeSingularBytesField(value: &self._publicKey) }()
-      case 3: try { try decoder.decodeSingularStringField(value: &self._name) }()
-      case 4: try { try decoder.decodeSingularStringField(value: &self._location) }()
-      case 5: try { try decoder.decodeSingularStringField(value: &self._room) }()
-      case 6: try { try decoder.decodeSingularEnumField(value: &self._venueType) }()
-      case 7: try { try decoder.decodeSingularBytesField(value: &self._notificationKey) }()
-      case 8: try { try decoder.decodeSingularUInt64Field(value: &self._validFrom) }()
-      case 9: try { try decoder.decodeSingularUInt64Field(value: &self._validTo) }()
+      case 1: try { try decoder.decodeSingularStringField(value: &self._name) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self._location) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self._room) }()
+      case 4: try { try decoder.decodeSingularEnumField(value: &self._venueType) }()
+      case 5: try { try decoder.decodeSingularBytesField(value: &self._notificationKey) }()
+      case 6: try { try decoder.decodeSingularUInt64Field(value: &self._validFrom) }()
+      case 7: try { try decoder.decodeSingularUInt64Field(value: &self._validTo) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if let v = self._version {
-      try visitor.visitSingularInt32Field(value: v, fieldNumber: 1)
-    }
-    if let v = self._publicKey {
-      try visitor.visitSingularBytesField(value: v, fieldNumber: 2)
-    }
     if let v = self._name {
-      try visitor.visitSingularStringField(value: v, fieldNumber: 3)
+      try visitor.visitSingularStringField(value: v, fieldNumber: 1)
     }
     if let v = self._location {
-      try visitor.visitSingularStringField(value: v, fieldNumber: 4)
+      try visitor.visitSingularStringField(value: v, fieldNumber: 2)
     }
     if let v = self._room {
-      try visitor.visitSingularStringField(value: v, fieldNumber: 5)
+      try visitor.visitSingularStringField(value: v, fieldNumber: 3)
     }
     if let v = self._venueType {
-      try visitor.visitSingularEnumField(value: v, fieldNumber: 6)
+      try visitor.visitSingularEnumField(value: v, fieldNumber: 4)
     }
     if let v = self._notificationKey {
-      try visitor.visitSingularBytesField(value: v, fieldNumber: 7)
+      try visitor.visitSingularBytesField(value: v, fieldNumber: 5)
     }
     if let v = self._validFrom {
-      try visitor.visitSingularUInt64Field(value: v, fieldNumber: 8)
+      try visitor.visitSingularUInt64Field(value: v, fieldNumber: 6)
     }
     if let v = self._validTo {
-      try visitor.visitSingularUInt64Field(value: v, fieldNumber: 9)
+      try visitor.visitSingularUInt64Field(value: v, fieldNumber: 7)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: QRCodeContent, rhs: QRCodeContent) -> Bool {
-    if lhs._version != rhs._version {return false}
-    if lhs._publicKey != rhs._publicKey {return false}
     if lhs._name != rhs._name {return false}
     if lhs._location != rhs._location {return false}
     if lhs._room != rhs._room {return false}

@@ -12,47 +12,63 @@ import Clibsodium
 import Foundation
 
 class CryptoFunctions {
-    static func createCheckinEntry(notificationKey: Bytes, venuePublicKey: Bytes, arrivalTime: Date, departureTime: Date) -> (epk: Bytes, h: Bytes, ctxt: Bytes)? {
-        var pk_venue_kx = Bytes(count: crypto_box_publickeybytes())
-        var result = crypto_sign_ed25519_pk_to_curve25519(&pk_venue_kx, venuePublicKey)
+    static func createCheckinEntry(venueInfo: VenueInfo, arrivalTime: Date, departureTime: Date) -> (epk: Bytes, h: Bytes, ctxt: Bytes)? {
+
+        var randomValue = Bytes(count: crypto_box_publickeybytes())
+        randombytes(&randomValue, UInt64(randomValue.count))
+
+        var gr = Bytes(count: crypto_box_publickeybytes())
+        var result = crypto_scalarmult(&gr, randomValue, venueInfo.publicKey.bytes)
 
         if result != 0 {
-            print("crypto_sign_ed25519_pk_to_curve25519 failed")
+            print("crypt_scalarmult failed")
             return nil
         }
 
-        var ephemeralSecretKey = Bytes(count: crypto_scalarmult_scalarbytes())
-        randombytes(&ephemeralSecretKey, UInt64(ephemeralSecretKey.count))
-
-        var ephemeralPublicKey = Bytes(count: crypto_scalarmult_bytes())
-        result = crypto_scalarmult_base(&ephemeralPublicKey, ephemeralSecretKey)
+        var h = Bytes(count: crypto_box_publickeybytes())
+        result = crypto_scalarmult(&h, randomValue, venueInfo.publicKey.bytes)
 
         if result != 0 {
-            print("crypto_scalarmult_base failed")
+            print("crypt_scalarmultt failed")
             return nil
         }
 
-        var tag = Bytes(count: crypto_scalarmult_bytes())
-        result = crypto_scalarmult(&tag, ephemeralSecretKey, pk_venue_kx)
-
-        if result != 0 {
-            print("crypto_scalarmult failed")
+        guard let venueBytes = venueInfoToBytes(venueInfo) else {
+            print("venueInfoToBytes failed")
             return nil
         }
 
-        let payload = CheckinPayload(arrivalTime: arrivalTime, departureTime: departureTime, notificationKey: notificationKey.data)
+        let infoConcatR1 = venueBytes + venueInfo.r1.bytes
+        var t = Bytes(count: crypto_generichash_bytes())
 
-        guard let m = try? JSONEncoder().encode(payload) else {
+        result = crypto_hash(&t, infoConcatR1, UInt64(infoConcatR1.count))
+
+        if result != 0 {
+            print("crypt_scalarmultt failed")
+            return nil
+        }
+
+        let aux = CheckinPayload(arrivalTime: arrivalTime, departureTime: departureTime, notificationKey: venueInfo.notificationKey)
+
+        guard let m = try? JSONEncoder().encode(aux).bytes else {
             print("Could not encode payload")
             return nil
         }
 
-        var encrypted = Bytes(count: m.count + crypto_box_sealbytes())
-        crypto_box_seal(&encrypted, m.bytes, UInt64(m.count), pk_venue_kx)
+        let tConcatAux = t + m
 
-        return (ephemeralPublicKey, tag, encrypted)
+        var cipher = Bytes(count: tConcatAux.count + crypto_box_sealbytes())
+
+        result = crypto_box_seal(&cipher, tConcatAux, UInt64(tConcatAux.count), venueInfo.publicKey.bytes)
+
+        if result != 0 {
+            print("crypto_box_seal failed")
+            return nil
+        }
+
+        return (epk: gr, h: h, ctxt: cipher)
     }
-
+    
     static func privateKeyEd25519ToCurve25519(privateKey: Bytes) -> Bytes? {
         var curve = Bytes(count: crypto_box_secretkeybytes())
         let result = crypto_sign_ed25519_sk_to_curve25519(&curve, privateKey)
@@ -77,28 +93,48 @@ class CryptoFunctions {
         return tagPrime
     }
 
-    static func decryptPayload(ciphertext: Bytes, privateKey: Bytes) -> CheckinPayload? {
-        var pk_venue_kx = Bytes(count: crypto_box_publickeybytes())
-        var result = crypto_scalarmult_curve25519_base(&pk_venue_kx, privateKey)
+    static func decryptPayload(ciphertext: Bytes, privateKey: Bytes, r2: Bytes) -> CheckinPayload? {
+        var gR = Bytes(count: crypto_box_publickeybytes())
+
+        var result = crypto_scalarmult_base(&gR, privateKey)
 
         if result != 0 {
-            print("Error during crypto_scalarmult_curve25519_base")
+            print("Error during crypto_scalarmult_base")
             return nil
         }
 
-        var data = Bytes(count: ciphertext.count - crypto_box_sealbytes())
-        result = crypto_box_seal_open(&data, ciphertext, UInt64(ciphertext.count), pk_venue_kx, privateKey)
+        var tConcatAux = Bytes(count: ciphertext.count - crypto_box_sealbytes())
+        result = crypto_box_seal_open(&tConcatAux, ciphertext, UInt64(ciphertext.count), gR, privateKey)
 
         if result != 0 {
             print("Error during crypto_box_seal_open")
             return nil
         }
 
-        return try? JSONDecoder().decode(CheckinPayload.self, from: data.data)
+        let t = tConcatAux.prefix(crypto_generichash_bytes())
+        let aux = tConcatAux.suffix(from: crypto_generichash_bytes())
+
+        let tConcatR2 = t + r2
+
+        var skP = Bytes(count: crypto_box_publickeybytes())
+
+        result = crypto_hash_sha256(&skP, tConcatR2.bytes, UInt64(tConcatR2.count))
+
+        if result != 0 {
+            print("Error during crypto_box_seal_open")
+            return nil
+        }
+
+        var venuePublicKey = Bytes(count: crypto_box_publickeybytes())
+        var venuePrivateKey = Bytes(count: crypto_box_secretkeybytes())
+
+        result = crypto_box_seed_keypair(&venuePublicKey, &venuePrivateKey, skP)
+
+        
+        return try? JSONDecoder().decode(CheckinPayload.self, from: aux.bytes.data)
     }
 
     static func decryptMessage(message: Bytes, nonce: Bytes, key: Bytes) -> String? {
-
         var data = Bytes(count: message.count - crypto_secretbox_macbytes())
         let result = crypto_secretbox_open_easy(&data, message, UInt64(message.count), nonce, key)
 
@@ -108,5 +144,25 @@ class CryptoFunctions {
         }
 
         return String(data: data.data, encoding: .utf8)
+    }
+
+    // MARK: - Helpers
+
+    private static func venueInfoToBytes(_ venueInfo: VenueInfo) -> Bytes?
+    {
+        var content = QRCodeContent()
+        content.location = venueInfo.location
+
+        if let r = venueInfo.room {
+            content.room = r
+        }
+
+        content.name = venueInfo.name
+        content.notificationKey = venueInfo.notificationKey
+        content.validTo = UInt64(venueInfo.validTo.millisecondsSince1970)
+        content.validFrom = UInt64(venueInfo.validFrom.millisecondsSince1970)
+        content.venueType = QRCodeContent.VenueType.fromVenueType(venueInfo.venueType)
+
+        return try? content.serializedData().bytes
     }
 }

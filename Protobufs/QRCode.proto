@@ -2,16 +2,15 @@ syntax = "proto2";
 
 message QRCodeWrapper {
   required int32 version = 1;
-  required QRCodeContent content = 2;
-  required bytes signature = 3;
+  required bytes publicKey = 2;
+  required bytes r1 = 3;
+  required QRCodeContent content = 4;
 }
 
 message QRCodeContent {
-  required int32 version = 1;
-  required bytes publicKey = 2;
-  required string name = 3;
-  required string location = 4;
-  optional string room = 5;
+  required string name = 1;
+  required string location = 2;
+  optional string room = 3;
   enum VenueType {
     OTHER = 0;
     MEETING_ROOM = 1;
@@ -25,8 +24,8 @@ message QRCodeContent {
     KITCHEN_AREA = 9;
     OFFICE_SPACE = 10;
   };
-  required VenueType venueType = 6;
-  required bytes notificationKey = 7;
-  optional uint64 validFrom = 8;
-  optional uint64 validTo = 9;
+  required VenueType venueType = 4;
+  required bytes notificationKey = 5;
+  optional uint64 validFrom = 6;
+  optional uint64 validTo = 7;
 }
