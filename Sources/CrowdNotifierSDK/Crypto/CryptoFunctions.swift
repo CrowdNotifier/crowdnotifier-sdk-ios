@@ -17,15 +17,15 @@ class CryptoFunctions {
         var randomValue = Bytes(count: crypto_box_publickeybytes())
         randombytes(&randomValue, UInt64(randomValue.count))
 
-        var gr = Bytes(count: crypto_box_publickeybytes())
-        var result = crypto_scalarmult(&gr, randomValue, venueInfo.publicKey.bytes)
+        var gR = Bytes(count: crypto_box_publickeybytes())
+        var result = crypto_scalarmult_base(&gR, randomValue)
 
         if result != 0 {
             print("crypt_scalarmult failed")
             return nil
         }
 
-        var h = Bytes(count: crypto_box_publickeybytes())
+        var h = Bytes(count: crypto_scalarmult_bytes())
         result = crypto_scalarmult(&h, randomValue, venueInfo.publicKey.bytes)
 
         if result != 0 {
@@ -41,7 +41,7 @@ class CryptoFunctions {
         let infoConcatR1 = venueBytes + venueInfo.r1.bytes
         var t = Bytes(count: crypto_generichash_bytes())
 
-        result = crypto_hash(&t, infoConcatR1, UInt64(infoConcatR1.count))
+        result = crypto_hash_sha256(&t, infoConcatR1, UInt64(infoConcatR1.count))
 
         if result != 0 {
             print("crypt_scalarmultt failed")
@@ -66,19 +66,7 @@ class CryptoFunctions {
             return nil
         }
 
-        return (epk: gr, h: h, ctxt: cipher)
-    }
-    
-    static func privateKeyEd25519ToCurve25519(privateKey: Bytes) -> Bytes? {
-        var curve = Bytes(count: crypto_box_secretkeybytes())
-        let result = crypto_sign_ed25519_sk_to_curve25519(&curve, privateKey)
-
-        if result != 0 {
-            print("crypto_sign_ed25519_sk_to_curve25519 failed")
-            return nil
-        }
-
-        return curve
+        return (epk: gR, h: h, ctxt: cipher)
     }
 
     static func computeSharedKey(privateKey: Bytes, publicKey: Bytes) -> Bytes? {
@@ -130,6 +118,14 @@ class CryptoFunctions {
 
         result = crypto_box_seed_keypair(&venuePublicKey, &venuePrivateKey, skP)
 
+        if result != 0 {
+            print("Error during crypto_box_seed_keypair")
+            return nil
+        }
+
+        if venuePrivateKey != privateKey {
+            return nil
+        }
         
         return try? JSONDecoder().decode(CheckinPayload.self, from: aux.bytes.data)
     }

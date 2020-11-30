@@ -45,7 +45,7 @@ class CrowdNotifierMain {
     func checkForMatches(publishedSKs: [ProblematicEventInfo]) -> [ExposureEvent] {
         let possibleMatches = checkinStorage.allEntries.values
 
-        var matches = [ExposureEvent]()
+        var matches = exposureStorage.exposureEvents
 
         for event in publishedSKs
         {
