@@ -16,6 +16,10 @@ let package = Package(
             name: "Clibsodium",
             targets: ["Clibsodium"]
         ),
+        .library(
+            name: "libmcl",
+            targets: ["libmcl"]
+        ),
     ],
     dependencies: [
         .package(
@@ -27,12 +31,16 @@ let package = Package(
     targets: [
         .target(
             name: "CrowdNotifierSDK",
-            dependencies: ["SwiftProtobuf", "Clibsodium"],
+            dependencies: ["SwiftProtobuf", "Clibsodium", "libmcl"],
             exclude: ["libsodium", "Info.plist"]
         ),
         .binaryTarget(
             name: "Clibsodium",
             path: "Clibsodium.xcframework"
+        ),
+        .binaryTarget(
+            name: "libmcl",
+            path: "libmcl.xcframework"
         ),
         .testTarget(
             name: "CrowdNotifierSDKTests",
