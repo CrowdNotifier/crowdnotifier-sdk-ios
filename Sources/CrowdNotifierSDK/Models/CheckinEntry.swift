@@ -13,9 +13,10 @@ import Foundation
 struct CheckinEntry: Codable {
     let id: String
     let daysSince1970: Int
-    let epk: Data
-    let h: Data
-    let ctxt: Data
+    let c1: Data
+    let c2: Data
+    let c3: Data
+    let nonce: Data
 }
 
 struct CheckinPayload: Codable {

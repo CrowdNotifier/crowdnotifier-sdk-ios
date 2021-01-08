@@ -22,4 +22,8 @@ public extension Date {
     var daysSince1970: Int {
         return Int(timeIntervalSince1970 / .day)
     }
+
+    var hoursSince1970: Int {
+        return Int(timeIntervalSince1970 / .hour)
+    }
 }

@@ -12,7 +12,8 @@ import Clibsodium
 import Foundation
 
 class QRCodeParser {
-    private static let currentVersion = 1
+    private static let currentVersion = 2
+    private static let minimumVersion = 2
 
     func extractVenueInformation(from qrCode: String, baseUrl: String) -> Result<VenueInfo, CrowdNotifierError> {
         guard let url = URL(string: qrCode) else {
@@ -30,41 +31,26 @@ class QRCodeParser {
             return .failure(.invalidQRCode)
         }
 
-        guard let wrapper = try? QRCodeWrapper(serializedData: decoded.data) else {
+        guard let entry = try? QRCodeEntry(serializedData: decoded.data) else {
             print("Could not create code from data")
             return .failure(.invalidQRCode)
         }
 
-        // check from date
-        let fromDate = Date(millisecondsSince1970: Int(wrapper.content.validFrom))
-
-        if Date() < fromDate {
-            return .failure(.validFromError)
-        }
-
-        // check to date
-        let toDate = Date(millisecondsSince1970: Int(wrapper.content.validTo))
-
-        if Date() > toDate {
-            return .failure(.validToError)
-        }
-
         // check version
-        let code = wrapper.content
-
-        if wrapper.version > QRCodeParser.currentVersion {
+        if entry.version > QRCodeParser.currentVersion || entry.version < QRCodeParser.minimumVersion {
             return .failure(.invalidQRCodeVersion)
         }
 
-        let info = VenueInfo(publicKey: wrapper.publicKey,
-                             r1: wrapper.r1,
-                             notificationKey: code.notificationKey,
-                             name: code.name,
-                             location: code.location,
-                             room: code.hasRoom ? code.room : nil,
-                             venueType: .fromVenueType(code.venueType),
-                             validFrom: fromDate,
-                             validTo: toDate)
+        let content = entry.data
+
+        let info = VenueInfo(masterPublicKey: entry.masterPublicKey,
+                             nonce1: entry.entryProof.nonce1,
+                             nonce2: entry.entryProof.nonce2,
+                             name: content.name,
+                             location: content.location,
+                             room: content.room,
+                             venueType: .fromVenueType(content.venueType),
+                             notificationKey: content.notificationKey)
 
         return .success(info)
     }
@@ -88,12 +74,4 @@ private func base642bin(_ b64: String, ignore: String? = nil) -> Bytes? {
     binBytes = binBytes[..<binBytesLen].bytes
 
     return binBytes
-}
-
-extension ArraySlice where Element == UInt8 {
-    var bytes: Bytes { return Bytes(self) }
-}
-
-extension String {
-    var bytes: Bytes { return Bytes(utf8) }
 }

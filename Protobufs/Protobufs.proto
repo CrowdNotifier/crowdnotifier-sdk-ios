@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+message QRCodeEntry {
+    uint32 version = 1;
+    QRCodeContent data = 2;
+    bytes masterPublicKey = 3;
+    EntryProof entryProof = 4;
+}
+
+message QRCodeContent {
+    string name = 1;
+    string location = 2;
+    string room = 3;
+    enum VenueType {
+        OTHER = 0;
+        MEETING_ROOM = 1;
+        CAFETERIA = 2;
+        PRIVATE_EVENT = 3;
+        CANTEEN = 4;
+        LIBRARY = 5;
+        LECTURE_ROOM = 6;
+        SHOP = 7;
+        GYM = 8;
+        KITCHEN_AREA = 9;
+        OFFICE_SPACE = 10;
+    }
+    VenueType venueType = 4;
+    bytes notificationKey = 5;
+}
+
+message EntryProof {
+    bytes nonce1 = 1;
+    bytes nonce2 = 2;
+}
