@@ -14,6 +14,7 @@ import Foundation
 class QRCodeParser {
     private static let currentVersion = 2
     private static let minimumVersion = 2
+    private static let urlVersionKey = "v"
 
     func extractVenueInformation(from qrCode: String, baseUrl: String) -> Result<VenueInfo, CrowdNotifierError> {
         guard let url = URL(string: qrCode) else {
@@ -24,6 +25,14 @@ class QRCodeParser {
         guard url.absoluteString.starts(with: baseUrl) else {
             print("Base URL does not match \(baseUrl)")
             return .failure(.invalidQRCode)
+        }
+
+        guard let version = getVersion(from: url) else {
+            return .failure(.invalidQRCode)
+        }
+
+        if isInvalidVersion(version) {
+            return .failure(.invalidQRCodeVersion)
         }
 
         guard let fragment = url.fragment, let decoded = base642bin(fragment) else {
@@ -37,7 +46,7 @@ class QRCodeParser {
         }
 
         // check version
-        if entry.version > QRCodeParser.currentVersion || entry.version < QRCodeParser.minimumVersion {
+        if isInvalidVersion(Int(entry.version)) {
             return .failure(.invalidQRCodeVersion)
         }
 
@@ -53,6 +62,14 @@ class QRCodeParser {
                              notificationKey: content.notificationKey)
 
         return .success(info)
+    }
+
+    private func isInvalidVersion(_ version: Int) -> Bool {
+        return version > QRCodeParser.currentVersion || version < QRCodeParser.minimumVersion
+    }
+
+    private func getVersion(from url: URL) -> Int? {
+        return Int(getQueryStringParameter(url: url, param: QRCodeParser.urlVersionKey) ?? "")
     }
 }
 
@@ -74,4 +91,9 @@ private func base642bin(_ b64: String, ignore: String? = nil) -> Bytes? {
     binBytes = binBytes[..<binBytesLen].bytes
 
     return binBytes
+}
+
+private func getQueryStringParameter(url: URL, param: String) -> String? {
+  guard let url = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return nil }
+  return url.queryItems?.first(where: { $0.name == param })?.value
 }
