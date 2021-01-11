@@ -50,6 +50,17 @@ class QRCodeParser {
             return .failure(.invalidQRCodeVersion)
         }
 
+        // check date validity
+        let now = Date()
+
+        if Date(millisecondsSince1970: Int(entry.data.validFrom)) > now {
+            return .failure(.validFromError)
+        }
+
+        if Date(millisecondsSince1970: Int(entry.data.validTo)) < now {
+            return .failure(.validToError)
+        }
+
         let content = entry.data
 
         let info = VenueInfo(masterPublicKey: entry.masterPublicKey,
@@ -59,7 +70,9 @@ class QRCodeParser {
                              location: content.location,
                              room: content.room,
                              venueType: .fromVenueType(content.venueType),
-                             notificationKey: content.notificationKey)
+                             notificationKey: content.notificationKey,
+                             validFrom: Int(content.validFrom),
+                             validTo: Int(content.validTo))
 
         return .success(info)
     }

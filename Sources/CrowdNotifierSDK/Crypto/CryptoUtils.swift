@@ -14,7 +14,7 @@ import libmcl
 
 typealias EncryptedCheckinData = (c1: Bytes, c2: Bytes, c3: Bytes, nonce: Bytes)
 
-class CryptoFunctions {
+final class CryptoUtils {
 
     private static let NONCE_LENGTH: Int = 32
 
@@ -121,95 +121,80 @@ class CryptoFunctions {
             var secretKeyForIdentity = mclBnG1()
             mclBnG1_deserialize(&secretKeyForIdentity, &sk, sk.count)
 
-            var c1Bytes = visit.c1.bytes
-            var c1 = mclBnG2()
-            mclBnG2_deserialize(&c1, &c1Bytes, c1Bytes.count)
+            if let msg_p = decryptInternal(visit: visit, secretKeyForIdentity: secretKeyForIdentity, identity: eventInfo.identity), let payload = try? JSONDecoder().decode(CheckinPayload.self, from: msg_p.data) {
+                var notificationKey = payload.notificationKey.bytes
+                var decryptedMessage = Bytes(count: eventInfo.encryptedMessage.count)
+                let result = crypto_secretbox_open_easy(&decryptedMessage, eventInfo.encryptedMessage, UInt64(eventInfo.encryptedMessage.count), &notificationKey, eventInfo.nonce)
 
-            var gt_temp = mclBnGT()
-            mclBn_pairing(&gt_temp, &secretKeyForIdentity, &c1)
+                let decryptedMessageString: String
+                if result != 0 {
+                    print("crypto_secretbox_open_easy failed")
+                    decryptedMessageString = ""
+                } else {
+                    decryptedMessageString = String(data: decryptedMessage.data, encoding: .utf8) ?? ""
+                }
 
-            var serializedGT = Bytes(count: Int(mclBn_getG1ByteSize() * 12))
-            mclBnGT_serialize(&serializedGT, serializedGT.count, &gt_temp)
-
-            guard let hash = sha256(input: serializedGT) else {
-                continue
+                events.append(ExposureEvent(checkinId: visit.id, arrivalTime: payload.arrivalTime, departureTime: payload.departureTime, message: decryptedMessageString))
             }
-
-            let x_p = xor(a: visit.c2.bytes, b: hash)
-            guard let x_p_hash = sha256(input: x_p) else {
-                continue
-            }
-
-            var c3Bytes = visit.c3.bytes
-            var nonceBytes = visit.nonce.bytes
-            var msg_p = Bytes(count: x_p_hash.count - crypto_secretbox_macbytes())
-            crypto_secretbox_open_easy(&msg_p, x_p_hash, UInt64(x_p_hash.count), &c3Bytes, &nonceBytes)
-
-            // Additional verification
-            var r_p = mclBnFr()
-            var combined = x_p + eventInfo.identity + msg_p
-            mclBnFr_setHashOf(&r_p, &combined, combined.count)
-
-            var c1_p = mclBnG2()
-            var g2 = baseG2()
-            mclBnG2_mul(&c1_p, &g2, &r_p)
-
-            let isEqual = mclBnG2_isEqual(&c1, &c1_p)
-            print("isEqual: \(isEqual)")
-            if isEqual != 1 {
-                continue
-            }
-
-            let isValidOrder = mclBnG1_isValidOrder(&secretKeyForIdentity)
-            let isZero = mclBnG1_isZero(&secretKeyForIdentity)
-            print("isValidOrder: \(isValidOrder), isZero: \(isZero)")
-            if isValidOrder != 1 || isZero != 1 {
-                continue
-            }
-
-            events.append(ExposureEvent(checkinId: visit.id, arrivalTime: Date(), departureTime: Date().addingTimeInterval(.hour * 2), message: "Hello World"))
         }
-
 
         return events
     }
 
-    private static func match(identity: Bytes, secretKey: Bytes, entry: CheckinEntry) -> Bool {
-        let c1 = entry.c1.bytes
-        let c2 = entry.c2.bytes
-        let c3 = entry.c3.bytes
-        let nonce = entry.nonce.bytes
+    private static func decryptInternal(visit: CheckinEntry, secretKeyForIdentity: mclBnG1, identity: Bytes) -> Bytes? {
+        var c1Bytes = visit.c1.bytes
+        var c1 = mclBnG2()
+        mclBnG2_deserialize(&c1, &c1Bytes, c1Bytes.count)
 
-        let x_p = xor(a: c2, b: c1)
+        var gt_temp = mclBnGT()
+        var sk = secretKeyForIdentity
+        mclBn_pairing(&gt_temp, &sk, &c1)
 
-        var msg_p = Bytes(count: 32)
+        var serializedGT = Bytes(count: Int(mclBn_getG1ByteSize() * 12))
+        mclBnGT_serialize(&serializedGT, serializedGT.count, &gt_temp)
 
-        guard let k = sha256(input: x_p) else {
-            return false
-        }
-
-        let result = crypto_secretbox_open_easy(&msg_p, c3, UInt64(c3.count), nonce, k)
-
-
-        guard let encryption = try? JSONEncoder().encode(Encryption(x: x_p, m: msg_p, id: identity)).bytes else {
-            return false
-        }
-
-        return true
-    }
-
-    private static func h3(x: Bytes, m: Bytes, id: Bytes) -> Bytes? {
-        guard let encoded = try? JSONEncoder().encode(Encryption(x: x, m: m, id: id)).bytes else {
+        guard let hash = sha256(input: serializedGT) else {
             return nil
         }
 
-        return sha256(input: encoded)
-    }
+        let x_p = xor(a: visit.c2.bytes, b: hash)
+        guard let x_p_hash = sha256(input: x_p) else {
+            return nil
+        }
 
-    private struct Encryption: Codable {
-        let x: Bytes
-        let m: Bytes
-        let id: Bytes
+        var c3Bytes = visit.c3.bytes
+        var nonceBytes = visit.nonce.bytes
+        var msg_p = Bytes(count: c3Bytes.count - crypto_secretbox_macbytes())
+        let result = crypto_secretbox_open_easy(&msg_p, &c3Bytes, UInt64(c3Bytes.count), &nonceBytes, x_p_hash)
+
+        if result != 0 {
+            print("decryptInternal failed")
+            return nil
+        }
+
+        // Additional verification
+        var r_p = mclBnFr()
+        var combined = x_p + identity + msg_p
+        mclBnFr_setHashOf(&r_p, &combined, combined.count)
+
+        var c1_p = mclBnG2()
+        var g2 = baseG2()
+        mclBnG2_mul(&c1_p, &g2, &r_p)
+
+        let isEqual = mclBnG2_isEqual(&c1, &c1_p)
+        print("isEqual: \(isEqual)")
+        if isEqual != 1 {
+            return nil
+        }
+
+        let isValidOrder = mclBnG1_isValidOrder(&sk)
+        let isZero = mclBnG1_isZero(&sk)
+        print("isValidOrder: \(isValidOrder), isZero: \(isZero)")
+        if isValidOrder != 1 || isZero != 1 {
+            return nil
+        }
+
+        return msg_p
     }
 
     private static func sha256(input: Bytes) -> Bytes? {
@@ -249,90 +234,6 @@ class CryptoFunctions {
         mclBnG2_setStr(&baseG2, baseString, baseString.count, 10)
 
         return baseG2
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-    static func computeSharedKey(privateKey: Bytes, publicKey: Bytes) -> Bytes? {
-        var tagPrime = Bytes(count: crypto_scalarmult_bytes())
-        let result = crypto_scalarmult(&tagPrime, privateKey, publicKey)
-
-        if result != 0 {
-            print("crypto_scalarmult failed")
-            return nil
-        }
-
-        return tagPrime
-    }
-
-    static func decryptPayload(ciphertext: Bytes, privateKey: Bytes, r2: Bytes) -> CheckinPayload? {
-        var gR = Bytes(count: crypto_box_publickeybytes())
-
-        var result = crypto_scalarmult_base(&gR, privateKey)
-
-        if result != 0 {
-            print("Error during crypto_scalarmult_base")
-            return nil
-        }
-
-        var tConcatAux = Bytes(count: ciphertext.count - crypto_box_sealbytes())
-        result = crypto_box_seal_open(&tConcatAux, ciphertext, UInt64(ciphertext.count), gR, privateKey)
-
-        if result != 0 {
-            print("Error during crypto_box_seal_open")
-            return nil
-        }
-
-        let t = tConcatAux.prefix(crypto_generichash_bytes())
-        let aux = tConcatAux.suffix(from: crypto_generichash_bytes())
-
-        let tConcatR2 = t + r2
-
-        var skP = Bytes(count: crypto_box_publickeybytes())
-
-        result = crypto_hash_sha256(&skP, tConcatR2.bytes, UInt64(tConcatR2.count))
-
-        if result != 0 {
-            print("Error during crypto_box_seal_open")
-            return nil
-        }
-
-        var venuePublicKey = Bytes(count: crypto_box_publickeybytes())
-        var venuePrivateKey = Bytes(count: crypto_box_secretkeybytes())
-
-        result = crypto_box_seed_keypair(&venuePublicKey, &venuePrivateKey, skP)
-
-        if result != 0 {
-            print("Error during crypto_box_seed_keypair")
-            return nil
-        }
-
-        if venuePrivateKey != privateKey {
-            return nil
-        }
-        
-        return try? JSONDecoder().decode(CheckinPayload.self, from: aux.bytes.data)
-    }
-
-    static func decryptMessage(message: Bytes, nonce: Bytes, key: Bytes) -> String? {
-        var data = Bytes(count: message.count - crypto_secretbox_macbytes())
-        let result = crypto_secretbox_open_easy(&data, message, UInt64(message.count), nonce, key)
-
-        if result != 0 {
-            print("Error during crypto_box_open_easy")
-            return nil
-        }
-
-        return String(data: data.data, encoding: .utf8)
     }
 
     // MARK: - Helpers

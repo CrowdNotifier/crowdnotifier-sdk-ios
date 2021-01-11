@@ -34,13 +34,17 @@ class CrowdNotifierMain {
     }
 
     private func addOrUpdateCheckin(checkinId: String? = nil, venueInfo: VenueInfo, arrivalTime: Date, departureTime: Date) -> Result<String, CrowdNotifierError> {
-        let id = UUID().uuidString
+        if let existingId = checkinId {
+            checkinStorage.removeEntries(with: existingId)
+        }
+
+        let id = checkinId ?? UUID().uuidString
 
         let startHour = arrivalTime.hoursSince1970
         let endHour = departureTime.hoursSince1970
 
         for hour in startHour...endHour {
-            guard let encryptedData = CryptoFunctions.createCheckinEntry(venueInfo: venueInfo, arrivalTime: arrivalTime, departureTime: departureTime, hour: hour) else {
+            guard let encryptedData = CryptoUtils.createCheckinEntry(venueInfo: venueInfo, arrivalTime: arrivalTime, departureTime: departureTime, hour: hour) else {
                 return .failure(.encryptionError)
             }
 
@@ -51,62 +55,25 @@ class CrowdNotifierMain {
     }
 
     func checkForMatches(problematicEventInfos: [ProblematicEventInfo]) -> [ExposureEvent] {
-        return []
-
-        var matches = exposureStorage.exposureEvents
+        var newExposureEvents = [ExposureEvent]()
 
         for eventInfo in problematicEventInfos {
-            let events = CryptoFunctions.searchAndDecryptMatches(eventInfo: eventInfo, visits: checkinStorage.checkinEntries)
-            print(events)
-//            for entry in possibleMatches {
-//                guard !matches.map(\.checkinId).contains(entry.id) else {
-//                    continue
-//                }
-//
-//                let aux = CryptoFunctions.match(identity: eventInfo.identity, secretKey: eventInfo.secretKeyForIdentity, entry: entry)
-//            }
+            let matches = CryptoUtils.searchAndDecryptMatches(eventInfo: eventInfo, visits: checkinStorage.checkinEntries)
+
+            for match in matches {
+                // Check if time of visit actually overlaps with the problematic timeslot
+                if match.arrivalTime <= eventInfo.endTimestamp, match.departureTime >= eventInfo.startTimestamp {
+                    // Don't add the same checkin twice
+                    if !newExposureEvents.contains(match) {
+                        newExposureEvents.append(match)
+                    }
+                }
+            }
         }
 
-//        let possibleMatches = checkinStorage.allEntries.values
-//
-//        var matches = exposureStorage.exposureEvents
-//
-//        for event in publishedSKs
-//        {
-//            for entry in possibleMatches
-//            {
-//                guard !matches.map({ $0.checkinId }).contains(entry.id) else {
-//                    continue
-//                }
-//
-//                guard let tagPrime = CryptoFunctions.computeSharedKey(privateKey: event.privateKey, publicKey: entry.epk.bytes) else {
-//                    continue
-//                }
-//
-//                // check tag prime
-//                if tagPrime != entry.h.bytes {
-//                    continue
-//                }
-//
-//                // We have a potential match!
-//                if let payload = CryptoFunctions.decryptPayload(ciphertext: entry.ctxt.bytes, privateKey: event.privateKey, r2: event.r2) {
-//                    let arrival = payload.arrivalTime.millisecondsSince1970
-//                    let departure = payload.departureTime.millisecondsSince1970
-//                    // Check if times actually overlap
-//                    if arrival <= event.exit.millisecondsSince1970, departure >= event.entry.millisecondsSince1970 {
-//
-//                        let m = CryptoFunctions.decryptMessage(message: event.message, nonce: event.nonce, key: payload.notificationKey.bytes) ?? ""
-//
-//                        matches.append(ExposureEvent(checkinId: entry.id, arrivalTime: payload.arrivalTime, departureTime: payload.departureTime, message: m))
-//                        continue
-//                    }
-//                }
-//            }
-//        }
-//
-//        exposureStorage.setExposureEvents(matches)
-//
-//        return matches
+        ExposureStorage.shared.setExposureEvents(newExposureEvents)
+
+        return newExposureEvents
     }
 
     func getExposureEvents() -> [ExposureEvent] {

@@ -34,6 +34,8 @@ public struct VenueInfo: Codable {
     public let room: String?
     public let venueType: VenueInfo.VenueType
     public let notificationKey: Data
+    public let validFrom: Int
+    public let validTo: Int
 }
 
 extension VenueInfo.VenueType {

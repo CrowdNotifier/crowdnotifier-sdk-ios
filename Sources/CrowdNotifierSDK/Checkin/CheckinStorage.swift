@@ -26,17 +26,6 @@ class CheckinStorage {
                              nonce: encryptedData.nonce.data)
 
         checkinEntries.append(entry)
-
-//        if let overrideId = overrideEntryWithID {
-//            let e = CheckinEntry(id: overrideId, daysSince1970: arrivalTime.daysSince1970, data: encryptedData)
-//            checkinEntries[overrideId] = try? JSONEncoder().encode(e)
-//            return overrideId
-//        } else {
-//            let id = UUID().uuidString
-//            let e = CheckinEntry(id: id, daysSince1970: arrivalTime.daysSince1970, data: encryptedData)
-//            checkinEntries[id] = try? JSONEncoder().encode(e)
-//            return id
-//        }
     }
 
     func removeEntries(with id: String) {

@@ -70,6 +70,10 @@ struct QRCodeContent {
 
   var notificationKey: Data = Data()
 
+  var validFrom: UInt64 = 0
+
+  var validTo: UInt64 = 0
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   enum VenueType: SwiftProtobuf.Enum {
@@ -225,6 +229,8 @@ extension QRCodeContent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     3: .same(proto: "room"),
     4: .same(proto: "venueType"),
     5: .same(proto: "notificationKey"),
+    6: .same(proto: "validFrom"),
+    7: .same(proto: "validTo"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -238,6 +244,8 @@ extension QRCodeContent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
       case 3: try { try decoder.decodeSingularStringField(value: &self.room) }()
       case 4: try { try decoder.decodeSingularEnumField(value: &self.venueType) }()
       case 5: try { try decoder.decodeSingularBytesField(value: &self.notificationKey) }()
+      case 6: try { try decoder.decodeSingularUInt64Field(value: &self.validFrom) }()
+      case 7: try { try decoder.decodeSingularUInt64Field(value: &self.validTo) }()
       default: break
       }
     }
@@ -259,6 +267,12 @@ extension QRCodeContent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if !self.notificationKey.isEmpty {
       try visitor.visitSingularBytesField(value: self.notificationKey, fieldNumber: 5)
     }
+    if self.validFrom != 0 {
+      try visitor.visitSingularUInt64Field(value: self.validFrom, fieldNumber: 6)
+    }
+    if self.validTo != 0 {
+      try visitor.visitSingularUInt64Field(value: self.validTo, fieldNumber: 7)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -268,6 +282,8 @@ extension QRCodeContent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if lhs.room != rhs.room {return false}
     if lhs.venueType != rhs.venueType {return false}
     if lhs.notificationKey != rhs.notificationKey {return false}
+    if lhs.validFrom != rhs.validFrom {return false}
+    if lhs.validTo != rhs.validTo {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

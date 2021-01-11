@@ -26,4 +26,12 @@ public extension Date {
     var hoursSince1970: Int {
         return Int(timeIntervalSince1970 / .hour)
     }
+
+    func hoursUntil(_ date: Date) -> [Int] {
+        guard self < date else {
+            return []
+        }
+
+        return Array(self.hoursSince1970...date.hoursSince1970)
+    }
 }
