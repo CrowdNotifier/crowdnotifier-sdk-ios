@@ -84,7 +84,7 @@ final class CryptoUtils {
         mclBnGT_pow(&gt_temp, &gt1_temp, &r)
 
         var serializedGT = Bytes(count: Int(mclBn_getG1ByteSize() * 12))
-        mclBnGT_serialize(&serializedGT, Int(mclBn_getG1ByteSize() * 12), &gt_temp)
+        mclBnGT_serialize(&serializedGT, serializedGT.count, &gt_temp)
         guard let c2_pair = sha256(input: serializedGT) else {
             return nil
         }
