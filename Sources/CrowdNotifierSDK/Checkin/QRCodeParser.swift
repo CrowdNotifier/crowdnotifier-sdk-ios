@@ -63,13 +63,13 @@ class QRCodeParser {
 
         let content = entry.data
 
-        let info = VenueInfo(masterPublicKey: entry.masterPublicKey,
-                             nonce1: entry.entryProof.nonce1,
-                             nonce2: entry.entryProof.nonce2,
-                             name: content.name,
+        let info = VenueInfo(name: content.name,
                              location: content.location,
                              room: content.room,
                              venueType: .fromVenueType(content.venueType),
+                             masterPublicKey: entry.masterPublicKey,
+                             nonce1: entry.entryProof.nonce1,
+                             nonce2: entry.entryProof.nonce2,
                              notificationKey: content.notificationKey,
                              validFrom: Int(content.validFrom),
                              validTo: Int(content.validTo))

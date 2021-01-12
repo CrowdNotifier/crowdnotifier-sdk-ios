@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Ubique Innovation AG <https://www.ubique.ch>
+ * Copyright (c) 2021 Ubique Innovation AG <https://www.ubique.ch>
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,17 +10,9 @@
 
 import Foundation
 
-struct CheckinEntry: Codable {
-    let id: String
-    let daysSince1970: Int
+struct EncryptedData: Codable {
     let c1: Data
     let c2: Data
     let c3: Data
     let nonce: Data
-}
-
-struct CheckinPayload: Codable {
-    let arrivalTime: Date
-    let departureTime: Date
-    let notificationKey: Data
 }

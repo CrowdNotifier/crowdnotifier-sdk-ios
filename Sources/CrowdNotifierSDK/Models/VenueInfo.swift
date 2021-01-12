@@ -25,14 +25,15 @@ public struct VenueInfo: Codable {
         case officeSpace = "OFFICE_SPACE"
     }
 
+    public let name: String
+    public let location: String
+    public let room: String
+    public let venueType: VenueInfo.VenueType
+
     public let masterPublicKey: Data
     public let nonce1: Data
     public let nonce2: Data
 
-    public let name: String
-    public let location: String
-    public let room: String?
-    public let venueType: VenueInfo.VenueType
     public let notificationKey: Data
     public let validFrom: Int
     public let validTo: Int

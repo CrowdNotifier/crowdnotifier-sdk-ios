@@ -35,21 +35,14 @@ class CrowdNotifierMain {
 
     private func addOrUpdateCheckin(checkinId: String? = nil, venueInfo: VenueInfo, arrivalTime: Date, departureTime: Date) -> Result<String, CrowdNotifierError> {
         if let existingId = checkinId {
-            checkinStorage.removeEntries(with: existingId)
+            checkinStorage.removeVisits(with: existingId)
         }
 
         let id = checkinId ?? UUID().uuidString
 
-        let startHour = arrivalTime.hoursSince1970
-        let endHour = departureTime.hoursSince1970
+        let visits = CryptoUtils.createEncryptedVenueVisits(id: id, arrivalTime: arrivalTime, departureTime: departureTime, venueInfo: venueInfo)
 
-        for hour in startHour...endHour {
-            guard let encryptedData = CryptoUtils.createCheckinEntry(venueInfo: venueInfo, arrivalTime: arrivalTime, departureTime: departureTime, hour: hour) else {
-                return .failure(.encryptionError)
-            }
-
-            checkinStorage.addCheckinEntry(id: id, arrivalTime: arrivalTime, encryptedData: encryptedData, overrideEntryWithID: checkinId)
-        }
+        visits.forEach { checkinStorage.addEncryptedVenueVisit($0) }
 
         return .success(id)
     }
@@ -58,7 +51,7 @@ class CrowdNotifierMain {
         var newExposureEvents = [ExposureEvent]()
 
         for eventInfo in problematicEventInfos {
-            let matches = CryptoUtils.searchAndDecryptMatches(eventInfo: eventInfo, visits: checkinStorage.checkinEntries)
+            let matches = CryptoUtils.searchAndDecryptMatches(eventInfo: eventInfo, venueVisits: checkinStorage.encryptedVenueVisits)
 
             for match in matches {
                 // Check if time of visit actually overlaps with the problematic timeslot
