@@ -48,7 +48,7 @@ class CrowdNotifierMain {
     }
 
     func checkForMatches(problematicEventInfos: [ProblematicEventInfo]) -> [ExposureEvent] {
-        var newExposureEvents = [ExposureEvent]()
+        var allExposureEvents = ExposureStorage.shared.exposureEvents
 
         for eventInfo in problematicEventInfos {
             let matches = CryptoUtils.searchAndDecryptMatches(eventInfo: eventInfo, venueVisits: checkinStorage.encryptedVenueVisits)
@@ -57,16 +57,16 @@ class CrowdNotifierMain {
                 // Check if time of visit actually overlaps with the problematic timeslot
                 if match.arrivalTime <= eventInfo.endTimestamp, match.departureTime >= eventInfo.startTimestamp {
                     // Don't add the same checkin twice
-                    if !newExposureEvents.contains(match) {
-                        newExposureEvents.append(match)
+                    if !allExposureEvents.contains(match) {
+                        allExposureEvents.append(match)
                     }
                 }
             }
         }
 
-        ExposureStorage.shared.setExposureEvents(newExposureEvents)
+        ExposureStorage.shared.setExposureEvents(allExposureEvents)
 
-        return newExposureEvents
+        return allExposureEvents
     }
 
     func getExposureEvents() -> [ExposureEvent] {

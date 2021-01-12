@@ -59,14 +59,16 @@ final class CryptoUtils {
                 continue
             }
 
-            let decryptedMessageString: String
-            if let decryptedMessage = crypto_secretbox_open_easy(key: payload.notificationKey.bytes, cipherText: eventInfo.encryptedMessage, nonce: eventInfo.nonce) {
-                decryptedMessageString = String(data: decryptedMessage.data, encoding: .utf8) ?? "Decryption successful, but encoding wrong" // TODO: Replace, probably with empty string
-            } else {
-                decryptedMessageString = "Decryption failed!" // TODO: Replace, probably with empty string
+            var decryptedMessageString = ""
+            if let decryptedMessage = crypto_secretbox_open_easy(key: payload.notificationKey.bytes, cipherText: eventInfo.encryptedMessage, nonce: eventInfo.nonce), let string = String(data: decryptedMessage.data, encoding: .utf8) {
+                decryptedMessageString = string
             }
 
-            exposureEvents.append(ExposureEvent(checkinId: visit.id, arrivalTime: payload.arrivalTime, departureTime: payload.departureTime, message: decryptedMessageString))
+            let event = ExposureEvent(checkinId: visit.id,
+                                      arrivalTime: payload.arrivalTime,
+                                      departureTime: payload.departureTime,
+                                      message: decryptedMessageString)
+            exposureEvents.append(event)
         }
 
         return exposureEvents
