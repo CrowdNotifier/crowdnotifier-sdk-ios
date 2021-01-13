@@ -10,16 +10,8 @@
 
 import Foundation
 
-struct CheckinEntry: Codable {
+struct EncryptedVenueVisit: Codable {
     let id: String
     let daysSince1970: Int
-    let epk: Data
-    let h: Data
-    let ctxt: Data
-}
-
-struct CheckinPayload: Codable {
-    let arrivalTime: Date
-    let departureTime: Date
-    let notificationKey: Data
+    let encryptedData: EncryptedData
 }

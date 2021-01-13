@@ -19,13 +19,17 @@ extension Bytes {
 }
 
 public extension Data {
-    var bytes: Bytes {
-        return Bytes(self)
-    }
+    var bytes: Bytes { return Bytes(self) }
 }
 
 public extension Array where Element == UInt8 {
-    var data: Data {
-        return Data(self)
-    }
+    var data: Data { return Data(self) }
+}
+
+extension ArraySlice where Element == UInt8 {
+    var bytes: Bytes { return Bytes(self) }
+}
+
+extension String {
+    var bytes: Bytes { return Bytes(utf8) }
 }

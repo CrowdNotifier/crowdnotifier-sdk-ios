@@ -1,4 +1,4 @@
 module libmcl {
-    header "mcl.h"
+    header "../mcl.h"
     export *
 }

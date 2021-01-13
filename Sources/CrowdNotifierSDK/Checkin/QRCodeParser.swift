@@ -12,7 +12,9 @@ import Clibsodium
 import Foundation
 
 class QRCodeParser {
-    private static let currentVersion = 1
+    private static let currentVersion = 2
+    private static let minimumVersion = 2
+    private static let urlVersionKey = "v"
 
     func extractVenueInformation(from qrCode: String, baseUrl: String) -> Result<VenueInfo, CrowdNotifierError> {
         guard let url = URL(string: qrCode) else {
@@ -25,48 +27,62 @@ class QRCodeParser {
             return .failure(.invalidQRCode)
         }
 
+        guard let version = getVersion(from: url) else {
+            return .failure(.invalidQRCode)
+        }
+
+        if isInvalidVersion(version) {
+            return .failure(.invalidQRCodeVersion)
+        }
+
         guard let fragment = url.fragment, let decoded = base642bin(fragment) else {
             print("Could not create data from fragment of url: \(url.absoluteString)")
             return .failure(.invalidQRCode)
         }
 
-        guard let wrapper = try? QRCodeWrapper(serializedData: decoded.data) else {
+        guard let entry = try? QRCodeEntry(serializedData: decoded.data) else {
             print("Could not create code from data")
             return .failure(.invalidQRCode)
         }
 
-        // check from date
-        let fromDate = Date(millisecondsSince1970: Int(wrapper.content.validFrom))
-
-        if Date() < fromDate {
-            return .failure(.validFromError)
-        }
-
-        // check to date
-        let toDate = Date(millisecondsSince1970: Int(wrapper.content.validTo))
-
-        if Date() > toDate {
-            return .failure(.validToError)
-        }
-
         // check version
-        let code = wrapper.content
-
-        if wrapper.version > QRCodeParser.currentVersion {
+        if isInvalidVersion(Int(entry.version)) {
             return .failure(.invalidQRCodeVersion)
         }
 
-        let info = VenueInfo(publicKey: wrapper.publicKey,
-                             r1: wrapper.r1,
-                             notificationKey: code.notificationKey,
-                             name: code.name,
-                             location: code.location,
-                             room: code.hasRoom ? code.room : nil,
-                             venueType: .fromVenueType(code.venueType),
-                             validFrom: fromDate,
-                             validTo: toDate)
+        // check date validity
+        let now = Date()
+
+        if Date(millisecondsSince1970: Int(entry.data.validFrom)) > now {
+            return .failure(.validFromError)
+        }
+
+        if Date(millisecondsSince1970: Int(entry.data.validTo)) < now {
+            return .failure(.validToError)
+        }
+
+        let content = entry.data
+
+        let info = VenueInfo(name: content.name,
+                             location: content.location,
+                             room: content.room,
+                             venueType: .fromVenueType(content.venueType),
+                             masterPublicKey: entry.masterPublicKey,
+                             nonce1: entry.entryProof.nonce1,
+                             nonce2: entry.entryProof.nonce2,
+                             notificationKey: content.notificationKey,
+                             validFrom: Int(content.validFrom),
+                             validTo: Int(content.validTo))
 
         return .success(info)
+    }
+
+    private func isInvalidVersion(_ version: Int) -> Bool {
+        return version > QRCodeParser.currentVersion || version < QRCodeParser.minimumVersion
+    }
+
+    private func getVersion(from url: URL) -> Int? {
+        return Int(getQueryStringParameter(url: url, param: QRCodeParser.urlVersionKey) ?? "")
     }
 }
 
@@ -90,10 +106,7 @@ private func base642bin(_ b64: String, ignore: String? = nil) -> Bytes? {
     return binBytes
 }
 
-extension ArraySlice where Element == UInt8 {
-    var bytes: Bytes { return Bytes(self) }
-}
-
-extension String {
-    var bytes: Bytes { return Bytes(utf8) }
+private func getQueryStringParameter(url: URL, param: String) -> String? {
+  guard let url = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return nil }
+  return url.queryItems?.first(where: { $0.name == param })?.value
 }

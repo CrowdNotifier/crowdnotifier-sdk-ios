@@ -11,19 +11,19 @@
 import Foundation
 
 public struct ProblematicEventInfo {
-    public let privateKey: Bytes
-    public let r2: Bytes
-    public let entry: Date
-    public let exit: Date
-    public let message: Bytes
+    public let identity: Bytes
+    public let secretKeyForIdentity: Bytes
+    public let startTimestamp: Date
+    public let endTimestamp: Date
+    public let encryptedMessage: Bytes
     public let nonce: Bytes
 
-    public init(privateKey: Bytes, r2: Bytes, entry: Date, exit: Date, message: Bytes, nonce: Bytes) {
-        self.privateKey = privateKey
-        self.r2 = r2
-        self.entry = entry
-        self.exit = exit
-        self.message = message
+    public init(identity: Bytes, secretKeyForIdentity: Bytes, startTimestamp: Date, endTimestamp: Date, encryptedMessage: Bytes, nonce: Bytes) {
+        self.identity = identity
+        self.secretKeyForIdentity = secretKeyForIdentity
+        self.startTimestamp = startTimestamp
+        self.endTimestamp = endTimestamp
+        self.encryptedMessage = encryptedMessage
         self.nonce = nonce
     }
 }

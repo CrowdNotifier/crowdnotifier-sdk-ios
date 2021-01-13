@@ -36,9 +36,9 @@ public enum CrowdNotifier {
         return instance.updateCheckin(checkinId: checkinId, venueInfo: venueInfo, newArrivalTime: newArrivalTime, newDepartureTime: newDepartureTime)
     }
 
-    public static func checkForMatches(publishedSKs: [ProblematicEventInfo]) -> [ExposureEvent] {
+    public static func checkForMatches(problematicEventInfos: [ProblematicEventInfo]) -> [ExposureEvent] {
         instancePrecondition()
-        return instance.checkForMatches(publishedSKs: publishedSKs)
+        return instance.checkForMatches(problematicEventInfos: problematicEventInfos)
     }
 
     public static func getExposureEvents() -> [ExposureEvent] {

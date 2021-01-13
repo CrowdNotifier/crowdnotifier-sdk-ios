@@ -25,15 +25,18 @@ public struct VenueInfo: Codable {
         case officeSpace = "OFFICE_SPACE"
     }
 
-    public let publicKey: Data
-    public let r1: Data
-    public let notificationKey: Data
     public let name: String
     public let location: String
-    public let room: String?
+    public let room: String
     public let venueType: VenueInfo.VenueType
-    public let validFrom: Date
-    public let validTo: Date
+
+    public let masterPublicKey: Data
+    public let nonce1: Data
+    public let nonce2: Data
+
+    public let notificationKey: Data
+    public let validFrom: Int
+    public let validTo: Int
 }
 
 extension VenueInfo.VenueType {
@@ -46,21 +49,23 @@ extension VenueInfo.VenueType {
         case .cafeteria:
             return .cafeteria
         case .privateEvent:
-            return privateEvent
+            return .privateEvent
         case .canteen:
-            return canteen
+            return .canteen
         case .library:
-            return library
+            return .library
         case .lectureRoom:
-            return lectureRoom
+            return .lectureRoom
         case .shop:
-            return shop
+            return .shop
         case .gym:
-            return gym
+            return .gym
         case .kitchenArea:
-            return kitchenArea
+            return .kitchenArea
         case .officeSpace:
-            return officeSpace
+            return .officeSpace
+        case .UNRECOGNIZED(_):
+            return .other
         }
     }
 }
@@ -75,21 +80,21 @@ extension QRCodeContent.VenueType {
         case .cafeteria:
             return .cafeteria
         case .privateEvent:
-            return privateEvent
+            return .privateEvent
         case .canteen:
-            return canteen
+            return .canteen
         case .library:
-            return library
+            return .library
         case .lectureRoom:
-            return lectureRoom
+            return .lectureRoom
         case .shop:
-            return shop
+            return .shop
         case .gym:
             return gym
         case .kitchenArea:
-            return kitchenArea
+            return .kitchenArea
         case .officeSpace:
-            return officeSpace
+            return .officeSpace
         }
     }
 }

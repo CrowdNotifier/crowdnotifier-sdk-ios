@@ -17,60 +17,42 @@ class CheckinStorage {
 
     private init() {}
 
-    func addCheckinEntry(arrivalTime: Date, epk: Bytes, h: Bytes, ctxt: Bytes, overrideEntryWithID: String? = nil) -> String {
-        if let overrideId = overrideEntryWithID {
-            let e = CheckinEntry(id: overrideId, daysSince1970: arrivalTime.daysSince1970, epk: Data(epk), h: Data(h), ctxt: Data(ctxt))
-            checkinEntries[overrideId] = try? JSONEncoder().encode(e)
-            return overrideId
-        } else {
-            let id = UUID().uuidString
-            let e = CheckinEntry(id: id, daysSince1970: arrivalTime.daysSince1970, epk: Data(epk), h: Data(h), ctxt: Data(ctxt))
-            checkinEntries[id] = try? JSONEncoder().encode(e)
-            return id
-        }
+    func addEncryptedVenueVisit(_ visit: EncryptedVenueVisit) {
+        encryptedVenueVisits.append(visit)
+    }
+
+    func removeVisits(with id: String) {
+        encryptedVenueVisits = encryptedVenueVisits.filter { $0.id != id }
     }
 
     func cleanUpOldData(maxDaysToKeep: Int) {
-        let allIds = checkinEntries.keys
-
         guard maxDaysToKeep > 0 else {
-            checkinEntries = [:]
+            encryptedVenueVisits = []
             return
         }
 
         let daysLimit = Date().daysSince1970 - maxDaysToKeep
 
-        for id in allIds {
-            if let data = checkinEntries[id], let entry = try? JSONDecoder().decode(CheckinEntry.self, from: data), entry.daysSince1970 >= daysLimit {
-                continue
-            } else {
-                checkinEntries[id] = nil
-            }
-        }
+        encryptedVenueVisits = encryptedVenueVisits.filter { $0.daysSince1970 >= daysLimit }
     }
 
     // MARK: - Storage
 
-    private(set) var checkinEntries: [String: Data] {
+    private(set) var encryptedVenueVisits: [EncryptedVenueVisit] {
         get {
-            return userDefaults.dictionary(forKey: .checkinEntries) as? [String: Data] ?? [:]
+            if let data = userDefaults.array(forKey: .encryptedVenueVisits) as? [Data] {
+                return data.compactMap { try? JSONDecoder().decode(EncryptedVenueVisit.self, from: $0) }
+            }
+
+            return []
         }
         set {
-            userDefaults.set(newValue, forKey: .checkinEntries)
+            let data = newValue.compactMap { try? JSONEncoder().encode($0) }
+            userDefaults.set(data, forKey: .encryptedVenueVisits)
         }
-    }
-
-    var allEntries: [String: CheckinEntry] {
-        var result = [String: CheckinEntry]()
-
-        for (k, v) in checkinEntries {
-            result[k] = try? JSONDecoder().decode(CheckinEntry.self, from: v)
-        }
-
-        return result
     }
 }
 
 private extension String {
-    static let checkinEntries = "sdk.crowdnotifier.checkinEntries"
+    static let encryptedVenueVisits = "sdk.crowdnotifier.encryptedVenueVisits"
 }
