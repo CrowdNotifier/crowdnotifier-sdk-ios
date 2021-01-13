@@ -75,5 +75,6 @@ class CrowdNotifierMain {
 
     func cleanUpOldData(maxDaysToKeep: Int) {
         checkinStorage.cleanUpOldData(maxDaysToKeep: maxDaysToKeep)
+        exposureStorage.cleanUpOldData(maxDaysToKeep: maxDaysToKeep)
     }
 }

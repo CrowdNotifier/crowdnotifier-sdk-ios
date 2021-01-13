@@ -22,4 +22,15 @@ class ExposureStorage {
     func setExposureEvents(_ events: [ExposureEvent]) {
         exposureEvents = events
     }
+
+    func cleanUpOldData(maxDaysToKeep: Int) {
+        guard maxDaysToKeep > 0 else {
+            exposureEvents = []
+            return
+        }
+
+        let dateLimit = Date().addingTimeInterval(.day * -Double(maxDaysToKeep))
+
+        exposureEvents = exposureEvents.filter { $0.departureTime > dateLimit }
+    }
 }
