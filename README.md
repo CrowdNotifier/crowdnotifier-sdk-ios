@@ -109,6 +109,7 @@ addCheckin | Stores a check-in given arrival time, departure time and the venue 
 updateCheckin | Updates a checkin that has previously been stored | `updateCheckin(checkinId: String, venueInfo: VenueInfo, newArrivalTime: Date, newDepartureTime: Date) -> Result<String, CrowdNotifierError>`
 checkForMatches | Given a set of published events with a known infected visitor, stores and returns those locally stored check-ins that overlap with one of the problematic events | `func checkForMatches(publishedSKs: [ProblematicEventInfo]) -> [ExposureEvent]`
 getExposureEvents | Returns all currently stored check-ins that have previously matched a problematic event | `getExposureEvents() -> [ExposureEvent]`
+removeExposure | Remove a exposure from the exposure storage | `removeExposure(exposure: ExposureEvent)`
 cleanUpOldData | Removes all check-ins that are older than the specified number of days | `func cleanUpOldData(maxDaysToKeep: Int)`
 
 

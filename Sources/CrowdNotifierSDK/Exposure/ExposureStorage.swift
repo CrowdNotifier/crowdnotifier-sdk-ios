@@ -23,6 +23,10 @@ class ExposureStorage {
         exposureEvents = events
     }
 
+    func removeExposure(_ exposure: ExposureEvent) {
+        exposureEvents = exposureEvents.filter { $0 != exposure }
+    }
+
     func cleanUpOldData(maxDaysToKeep: Int) {
         guard maxDaysToKeep > 0 else {
             exposureEvents = []
