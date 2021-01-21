@@ -9,6 +9,7 @@
  */
 
 import Foundation
+import CrowdNotifierBaseSDK
 
 private var instance: CrowdNotifierMain!
 

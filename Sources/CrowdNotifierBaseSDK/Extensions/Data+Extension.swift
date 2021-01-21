@@ -12,7 +12,7 @@ import Foundation
 
 public typealias Bytes = [UInt8]
 
-extension Bytes {
+public extension Bytes {
     init(count: Int) {
         self.init(repeating: 0, count: count)
     }
@@ -26,10 +26,10 @@ public extension Array where Element == UInt8 {
     var data: Data { return Data(self) }
 }
 
-extension ArraySlice where Element == UInt8 {
+public extension ArraySlice where Element == UInt8 {
     var bytes: Bytes { return Bytes(self) }
 }
 
-extension String {
+public extension String {
     var bytes: Bytes { return Bytes(utf8) }
 }

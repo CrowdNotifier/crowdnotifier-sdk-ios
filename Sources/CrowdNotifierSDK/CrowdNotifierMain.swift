@@ -10,19 +10,19 @@
 
 import Foundation
 import libmcl
+import CrowdNotifierBaseSDK
+
 
 class CrowdNotifierMain {
-    private var qrCodeParser: QRCodeParser
     private let checkinStorage: CheckinStorage = .shared
     private let exposureStorage: ExposureStorage = .shared
 
     init() {
-        qrCodeParser = QRCodeParser()
         mclBn_init(Int32(MCL_BLS12_381), MCLBN_FR_UNIT_SIZE * 10 + MCLBN_FP_UNIT_SIZE)
     }
 
     func getVenueInfo(qrCode: String, baseUrl: String) -> Result<VenueInfo, CrowdNotifierError> {
-        return qrCodeParser.extractVenueInformation(from: qrCode, baseUrl: baseUrl)
+        return CrowdNotifierBase.getVenueInfo(qrCode: qrCode, baseUrl: baseUrl)
     }
 
     func addCheckin(venueInfo: VenueInfo, arrivalTime: Date, departureTime: Date) -> Result<String, CrowdNotifierError> {
