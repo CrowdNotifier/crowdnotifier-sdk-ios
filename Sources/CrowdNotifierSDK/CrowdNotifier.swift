@@ -41,6 +41,11 @@ public enum CrowdNotifier {
         return instance.checkForMatches(problematicEventInfos: problematicEventInfos)
     }
 
+    public static func benchmark() {
+        instancePrecondition()
+        instance.benchmark()
+    }
+
     public static func getExposureEvents() -> [ExposureEvent] {
         instancePrecondition()
         return instance.getExposureEvents()
