@@ -46,6 +46,11 @@ public enum CrowdNotifier {
         return instance.getExposureEvents()
     }
 
+    public static func removeExposure(exposure: ExposureEvent) {
+        instancePrecondition()
+        return instance.removeExposure(exposure: exposure)
+    }
+
     public static func cleanUpOldData(maxDaysToKeep: Int) {
         instancePrecondition()
         instance.cleanUpOldData(maxDaysToKeep: maxDaysToKeep)
