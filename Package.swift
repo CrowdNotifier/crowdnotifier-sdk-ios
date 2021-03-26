@@ -28,7 +28,7 @@ let package = Package(
         .package(
             name: "SwiftProtobuf",
             url: "https://github.com/apple/swift-protobuf.git",
-            .revision("1.13.0")
+            .exact("1.13.0")
         ),
     ],
     targets: [
