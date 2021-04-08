@@ -12,8 +12,9 @@ import Clibsodium
 import Foundation
 
 class QRCodeParser {
-    private static let currentVersion = 2
+    private static let currentVersion = 3
     private static let minimumVersion = 2
+    private static let lastLegacyVersion = 2
     private static let urlVersionKey = "v"
 
     func extractVenueInformation(from qrCode: String, baseUrl: String) -> Result<VenueInfo, CrowdNotifierError> {
@@ -40,7 +41,63 @@ class QRCodeParser {
             return .failure(.invalidQRCode)
         }
 
-        guard let entry = try? QRCodeEntry(serializedData: decoded.data) else {
+        if version > QRCodeParser.lastLegacyVersion {
+            return extractVenueInfo(data: decoded.data)
+        } else {
+            return legacyExtractVenueInfo(data: decoded.data)
+        }
+    }
+
+    private func extractVenueInfo(data: Data) -> Result<VenueInfo, CrowdNotifierError> {
+        guard let payload = try? QRCodePayload(serializedData: data), let countryData = try? NMLocationData(serializedData: payload.countryData) else {
+            print("Could not create code from data")
+            return .failure(.invalidQRCode)
+        }
+
+        // Length: 32 bytes for nonce1 and nonce2, 16 bytes for notification_key
+        let length = 32 + 32 + 16
+        let hkdfKey = CryptoUtils.createHKDFKey(length: length, inputKey: data.bytes, salt: [], info: Bytes("NotifyMe_v2.2".utf8))
+
+        guard hkdfKey.count == length else {
+            return .failure(.invalidQRCode)
+        }
+
+        let nonce1 = Bytes(hkdfKey[0..<32])
+        let nonce2 = Bytes(hkdfKey[32..<64])
+        let notificationKey = Bytes(hkdfKey[64..<80])
+
+        // check version
+        if isInvalidVersion(Int(payload.version)) {
+            return .failure(.invalidQRCodeVersion)
+        }
+
+        // check date validity
+        let now = Date()
+
+        if Date(millisecondsSince1970: Int(payload.locationData.startTimestamp)) > now {
+            return .failure(.validFromError)
+        }
+
+        if Date(millisecondsSince1970: Int(payload.locationData.endTimestamp)) < now {
+            return .failure(.validToError)
+        }
+
+        let info = VenueInfo(name: payload.locationData.description_p,
+                             location: payload.locationData.address,
+                             room: countryData.room,
+                             venueType: .fromVenueType(countryData.type),
+                             masterPublicKey: payload.crowdNotifierData.publicKey,
+                             nonce1: nonce1.data,
+                             nonce2: nonce2.data,
+                             notificationKey: notificationKey.data,
+                             validFrom: Int(payload.locationData.startTimestamp),
+                             validTo: Int(payload.locationData.endTimestamp))
+
+        return .success(info)
+    }
+
+    private func legacyExtractVenueInfo(data: Data) -> Result<VenueInfo, CrowdNotifierError> {
+        guard let entry = try? QRCodeEntry(serializedData: data) else {
             print("Could not create code from data")
             return .failure(.invalidQRCode)
         }
