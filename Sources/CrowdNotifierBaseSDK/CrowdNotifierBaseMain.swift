@@ -10,8 +10,14 @@
 
 import Foundation
 
-struct EncryptedVenueVisit: Codable {
-    let id: String
-    let daysSince1970: Int
-    let encryptedData: EncryptedData
+class CrowdNotifierBaseMain {
+    private var qrCodeParser: QRCodeParser
+
+    init() {
+        qrCodeParser = QRCodeParser()
+    }
+
+    func getVenueInfo(qrCode: String, baseUrl: String) -> Result<VenueInfo, CrowdNotifierError> {
+        return qrCodeParser.extractVenueInformation(from: qrCode, baseUrl: baseUrl)
+    }
 }

@@ -10,9 +10,16 @@
 
 import Foundation
 
-struct EncryptedData: Codable {
-    let c1: Data
-    let c2: Data
-    let c3: Data
-    let nonce: Data
+public struct EncryptedData: Codable {
+    public init(c1: Data, c2: Data, c3: Data, nonce: Data) {
+        self.c1 = c1
+        self.c2 = c2
+        self.c3 = c3
+        self.nonce = nonce
+    }
+    
+    public let c1: Data
+    public let c2: Data
+    public let c3: Data
+    public let nonce: Data
 }

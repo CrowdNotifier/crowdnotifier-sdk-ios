@@ -12,6 +12,9 @@ let package = Package(
             name: "CrowdNotifierSDK",
             targets: ["CrowdNotifierSDK"]
         ),
+        .library(name: "CrowdNotifierBaseSDK",
+                 targets: ["CrowdNotifierBaseSDK"]
+        ),
         .library(
             name: "Clibsodium",
             targets: ["Clibsodium"]
@@ -31,8 +34,12 @@ let package = Package(
     targets: [
         .target(
             name: "CrowdNotifierSDK",
-            dependencies: ["SwiftProtobuf", "Clibsodium", "libmcl"],
+            dependencies: ["CrowdNotifierBaseSDK", "SwiftProtobuf", "Clibsodium", "libmcl"],
             exclude: ["libsodium", "Info.plist"]
+        ),
+        .target(name: "CrowdNotifierBaseSDK",
+                dependencies: ["SwiftProtobuf"],
+                exclude: ["libsodium", "Info.plist"]
         ),
         .binaryTarget(
             name: "Clibsodium",

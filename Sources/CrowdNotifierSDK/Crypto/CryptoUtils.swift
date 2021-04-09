@@ -8,8 +8,9 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import Clibsodium
 import Foundation
+import CrowdNotifierBaseSDK
+import Clibsodium
 import libmcl
 
 final class CryptoUtils {
@@ -173,7 +174,7 @@ final class CryptoUtils {
     }
 
     private static func generateIdentity(hour: Int, venueInfo: VenueInfo) -> Bytes? {
-        guard let venueBytes = venueInfoToBytes(venueInfo), let hash1 = crypto_hash_sha256(input: venueBytes + venueInfo.nonce1) else {
+        guard let venueBytes = venueInfo.toBytes(), let hash1 = crypto_hash_sha256(input: venueBytes + venueInfo.nonce1) else {
             return nil
         }
 
@@ -247,20 +248,6 @@ final class CryptoUtils {
         mclBnG2_setStr(&baseG2, baseString, baseString.count, 10)
 
         return baseG2
-    }
-
-    private static func venueInfoToBytes(_ venueInfo: VenueInfo) -> Bytes? {
-        var content = QRCodeContent()
-        content.name = venueInfo.name
-        content.location = venueInfo.location
-        content.room = venueInfo.room
-        content.venueType = .fromVenueType(venueInfo.venueType)
-
-        content.notificationKey = venueInfo.notificationKey
-        content.validFrom = UInt64(venueInfo.validFrom)
-        content.validTo = UInt64(venueInfo.validTo)
-
-        return try? content.serializedData().bytes
     }
 
 }

@@ -99,3 +99,18 @@ extension QRCodeContent.VenueType {
     }
 }
 
+public extension VenueInfo {
+    public func toBytes() -> Bytes? {
+        var content = QRCodeContent()
+        content.name = self.name
+        content.location = self.location
+        content.room = self.room
+        content.venueType = .fromVenueType(self.venueType)
+
+        content.notificationKey = self.notificationKey
+        content.validFrom = UInt64(self.validFrom)
+        content.validTo = UInt64(self.validTo)
+
+        return try? content.serializedData().bytes
+    }
+}

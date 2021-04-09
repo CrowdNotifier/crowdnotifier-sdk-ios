@@ -11,6 +11,13 @@
 import Foundation
 
 public struct ExposureEvent: Codable {
+    public init(checkinId: String, arrivalTime: Date, departureTime: Date, message: String) {
+        self.checkinId = checkinId
+        self.arrivalTime = arrivalTime
+        self.departureTime = departureTime
+        self.message = message
+    }
+
     public let checkinId: String
     public let arrivalTime: Date
     public let departureTime: Date

@@ -10,6 +10,7 @@
  */
 
 import Foundation
+import CrowdNotifierBaseSDK
 
 class ExposureStorage {
     static let shared = ExposureStorage()

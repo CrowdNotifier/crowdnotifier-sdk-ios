@@ -9,6 +9,7 @@
  */
 
 import Foundation
+import CrowdNotifierBaseSDK
 
 private var instance: CrowdNotifierMain!
 
@@ -19,6 +20,7 @@ public enum CrowdNotifier {
     public static func initialize() {
         precondition(instance == nil, "CrowdNotifierSDK already initialized")
         instance = CrowdNotifierMain()
+        CrowdNotifierBase.initialize()
     }
 
     public static func getVenueInfo(qrCode: String, baseUrl: String) -> Result<VenueInfo, CrowdNotifierError> {
