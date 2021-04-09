@@ -38,8 +38,7 @@ let package = Package(
             exclude: ["libsodium", "Info.plist"]
         ),
         .target(name: "CrowdNotifierBaseSDK",
-                dependencies: ["SwiftProtobuf"],
-                exclude: ["libsodium", "Info.plist"]
+            dependencies: ["SwiftProtobuf"]
         ),
         .binaryTarget(
             name: "Clibsodium",
