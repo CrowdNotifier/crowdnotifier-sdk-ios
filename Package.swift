@@ -51,7 +51,7 @@ let package = Package(
         ),
         .testTarget(
             name: "CrowdNotifierSDKTests",
-            dependencies: ["CrowdNotifierSDK"]
+            dependencies: ["CrowdNotifierSDK", "CrowdNotifierBaseSDK"]
         ),
     ]
 )

@@ -11,6 +11,7 @@
 import Clibsodium
 import Foundation
 @testable import CrowdNotifierSDK
+@testable import CrowdNotifierBaseSDK
 import XCTest
 
 class CrowdNotifierSDKTests: XCTestCase {
@@ -24,6 +25,23 @@ class CrowdNotifierSDKTests: XCTestCase {
     override class func setUp() {
         CrowdNotifier.initialize()
         CrowdNotifier.cleanUpOldData(maxDaysToKeep: 0)
+    }
+
+    func testHours() {
+        let date1 = Date(timeIntervalSince1970: 1_609_495_200) // 01.01.2021 10:00
+
+        let date2 = date1.addingTimeInterval(.minute * 59) // 01.01.2021 10:59
+        assert(date1.hoursUntil(date2) == [447_082], "Hours should be [447082]")
+
+        let date3 = date1.addingTimeInterval(.minute * 60) // 01.01.2021 11:00
+        assert(date1.hoursUntil(date3) == [447_082, 447_083], "Hours should be [447082, 447083]")
+
+        let date4 = date1.addingTimeInterval(.minute * -1) // 01.01.2021 09:59
+        assert(date1.hoursUntil(date4) == [], "Hours should be [] (validFrom > validTo")
+        assert(date4.hoursUntil(date1) == [447_081, 447_082], "Hours should be [447081, 447082]")
+
+        let date5 = date1.addingTimeInterval(.hour * 20 - .second * 1)
+        assert(date1.hoursUntil(date5).count == 20, "There should be 20 hours")
     }
 
 //    func testCorrectQrCode() {
