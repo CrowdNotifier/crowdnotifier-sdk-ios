@@ -54,8 +54,8 @@ class QRCodeParser {
             return .failure(.invalidQRCode)
         }
 
-        // Length: 32 bytes for nonce1 and nonce2, 16 bytes for notification_key
-        let length = 32 + 32 + 16
+        // Length: 32 bytes for nonce1 and nonce2, 32 bytes for notification_key
+        let length = 32 + 32 + 32
         let hkdfKey = CryptoUtils.createHKDFKey(length: length, inputKey: data.bytes, salt: [], info: Bytes("NotifyMe_v2.2".utf8))
 
         guard hkdfKey.count == length else {
@@ -64,7 +64,7 @@ class QRCodeParser {
 
         let nonce1 = Bytes(hkdfKey[0..<32])
         let nonce2 = Bytes(hkdfKey[32..<64])
-        let notificationKey = Bytes(hkdfKey[64..<80])
+        let notificationKey = Bytes(hkdfKey[64..<96])
 
         // check version
         if isInvalidVersion(Int(payload.version)) {
