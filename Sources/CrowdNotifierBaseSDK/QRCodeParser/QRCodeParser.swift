@@ -42,29 +42,21 @@ class QRCodeParser {
         }
 
         if version > QRCodeParser.lastLegacyVersion {
-            return extractVenueInfo(data: decoded.data)
+            return extractVenueInfoV3(data: decoded.data)
         } else {
-            return legacyExtractVenueInfo(data: decoded.data)
+            return extractVenueInfoV2(data: decoded.data)
         }
     }
 
-    private func extractVenueInfo(data: Data) -> Result<VenueInfo, CrowdNotifierError> {
-        guard let payload = try? QRCodePayload(serializedData: data), let countryData = try? NMLocationData(serializedData: payload.countryData) else {
+    private func extractVenueInfoV3(data: Data) -> Result<VenueInfo, CrowdNotifierError> {
+        guard let payload = try? QRCodePayload(serializedData: data) else {
             print("Could not create code from data")
             return .failure(.invalidQRCode)
         }
 
-        // Length: 32 bytes for nonce1 and nonce2, 32 bytes for notification_key
-        let length = 32 + 32 + 32
-        let hkdfKey = CryptoUtils.createHKDFKey(length: length, inputKey: data.bytes, salt: [], info: Bytes("NotifyMe_v2.2".utf8))
-
-        guard hkdfKey.count == length else {
+        guard let (nonce1, nonce2, notificationKey) = CryptoUtils.getNoncesAndNotificationKey(infoBytes: data.bytes) else {
             return .failure(.invalidQRCode)
         }
-
-        let nonce1 = Bytes(hkdfKey[0..<32])
-        let nonce2 = Bytes(hkdfKey[32..<64])
-        let notificationKey = Bytes(hkdfKey[64..<96])
 
         // check version
         if isInvalidVersion(Int(payload.version)) {
@@ -82,21 +74,21 @@ class QRCodeParser {
             return .failure(.validToError)
         }
 
-        let info = VenueInfo(name: payload.locationData.description_p,
-                             location: payload.locationData.address,
-                             room: countryData.room,
-                             venueType: .fromVenueType(countryData.type),
-                             masterPublicKey: payload.crowdNotifierData.publicKey,
+        let info = VenueInfo(description: payload.locationData.description_p,
+                             address: payload.locationData.address,
+                             notificationKey: notificationKey.data,
+                             publicKey: payload.crowdNotifierData.publicKey,
                              nonce1: nonce1.data,
                              nonce2: nonce2.data,
-                             notificationKey: notificationKey.data,
                              validFrom: Int(payload.locationData.startTimestamp),
-                             validTo: Int(payload.locationData.endTimestamp))
+                             validTo: Int(payload.locationData.endTimestamp),
+                             infoBytes: try? payload.serializedData(),
+                             countryData: payload.countryData)
 
         return .success(info)
     }
 
-    private func legacyExtractVenueInfo(data: Data) -> Result<VenueInfo, CrowdNotifierError> {
+    private func extractVenueInfoV2(data: Data) -> Result<VenueInfo, CrowdNotifierError> {
         guard let entry = try? QRCodeEntry(serializedData: data) else {
             print("Could not create code from data")
             return .failure(.invalidQRCode)
@@ -120,16 +112,25 @@ class QRCodeParser {
 
         let content = entry.data
 
-        let info = VenueInfo(name: content.name,
-                             location: content.location,
-                             room: content.room,
-                             venueType: .fromVenueType(content.venueType),
-                             masterPublicKey: entry.masterPublicKey,
+        // For backwards compatibility, manually create a NotifyMeLocationData object to put into countryData
+        var locationData = NotifyMeLocationData()
+        locationData.room = content.room
+        locationData.type = .fromVenueType(content.venueType)
+
+        guard let countryData = try? locationData.serializedData() else {
+            return .failure(.invalidQRCode)
+        }
+
+        let info = VenueInfo(description: content.name,
+                             address: content.location,
+                             notificationKey: content.notificationKey,
+                             publicKey: entry.masterPublicKey,
                              nonce1: entry.entryProof.nonce1,
                              nonce2: entry.entryProof.nonce2,
-                             notificationKey: content.notificationKey,
                              validFrom: Int(content.validFrom),
-                             validTo: Int(content.validTo))
+                             validTo: Int(content.validTo),
+                             infoBytes: nil,
+                             countryData: countryData)
 
         return .success(info)
     }

@@ -22,7 +22,7 @@ message CrowdNotifierData {
     uint32 type = 4;
 }
 
-message NMLocationData {
+message NotifyMeLocationData {
     uint32 version = 1;
     enum VenueType {
         OTHER = 0;
@@ -39,4 +39,25 @@ message NMLocationData {
     }
     VenueType type = 2;
     string room = 3;
+}
+
+message ProblematicEventWrapper {
+    int32 version = 1;
+    repeated ProblematicEvent events = 2;
+}
+
+message ProblematicEvent {
+  int32 version = 1;
+  bytes identity = 2;
+  bytes secretKeyForIdentity = 3;
+  int64 startTime = 4;
+  int64 endTime = 5;
+  bytes encryptedAssociatedData = 6;
+  bytes cipherTextNonce = 7;
+}
+
+message AssociatedData {
+    int32 version = 1;
+    string message = 2;
+    bytes countryData = 3;
 }

@@ -22,6 +22,7 @@ public struct ExposureEvent: Codable {
     public let arrivalTime: Date
     public let departureTime: Date
     public let message: String
+    public let countryData: Data?
 }
 
 extension ExposureEvent: Equatable {

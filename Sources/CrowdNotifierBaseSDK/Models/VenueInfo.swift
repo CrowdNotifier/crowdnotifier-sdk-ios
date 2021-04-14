@@ -11,121 +11,19 @@
 import Foundation
 
 public struct VenueInfo: Codable {
-    public enum VenueType: String, Codable {
-        case other = "OTHER"
-        case meetingRoom = "MEETING_ROOM"
-        case cafeteria = "CAFETERIA"
-        case privateEvent = "PRIVATE_EVENT"
-        case canteen = "CANTEEN"
-        case library = "LIBRARY"
-        case lectureRoom = "LECTURE_ROOM"
-        case shop = "SHOP"
-        case gym = "GYM"
-        case kitchenArea = "KITCHEN_AREA"
-        case officeSpace = "OFFICE_SPACE"
-    }
+    public let description: String
+    public let address: String
 
-    public let name: String
-    public let location: String
-    public let room: String
-    public let venueType: VenueInfo.VenueType
-
-    public let masterPublicKey: Data
+    public let notificationKey: Data
+    public let publicKey: Data
     public let nonce1: Data
     public let nonce2: Data
 
-    public let notificationKey: Data
     public let validFrom: Int
     public let validTo: Int
-}
 
-extension VenueInfo.VenueType {
-    static func fromVenueType(_ type: QRCodeContent.VenueType) -> VenueInfo.VenueType {
-        switch type {
-        case .other:
-            return .other
-        case .meetingRoom:
-            return .meetingRoom
-        case .cafeteria:
-            return .cafeteria
-        case .privateEvent:
-            return .privateEvent
-        case .canteen:
-            return .canteen
-        case .library:
-            return .library
-        case .lectureRoom:
-            return .lectureRoom
-        case .shop:
-            return .shop
-        case .gym:
-            return .gym
-        case .kitchenArea:
-            return .kitchenArea
-        case .officeSpace:
-            return .officeSpace
-        case .UNRECOGNIZED(_):
-            return .other
-        }
-    }
-
-    static func fromVenueType(_ type: NMLocationData.VenueType) -> VenueInfo.VenueType {
-        switch type {
-        case .other:
-            return .other
-        case .meetingRoom:
-            return .meetingRoom
-        case .cafeteria:
-            return .cafeteria
-        case .privateEvent:
-            return .privateEvent
-        case .canteen:
-            return .canteen
-        case .library:
-            return .library
-        case .lectureRoom:
-            return .lectureRoom
-        case .shop:
-            return .shop
-        case .gym:
-            return .gym
-        case .kitchenArea:
-            return .kitchenArea
-        case .officeSpace:
-            return .officeSpace
-        case .UNRECOGNIZED(_):
-            return .other
-        }
-    }
-}
-
-extension QRCodeContent.VenueType {
-    static func fromVenueType(_ type: VenueInfo.VenueType) -> QRCodeContent.VenueType {
-        switch type {
-        case .other:
-            return .other
-        case .meetingRoom:
-            return .meetingRoom
-        case .cafeteria:
-            return .cafeteria
-        case .privateEvent:
-            return .privateEvent
-        case .canteen:
-            return .canteen
-        case .library:
-            return .library
-        case .lectureRoom:
-            return .lectureRoom
-        case .shop:
-            return .shop
-        case .gym:
-            return gym
-        case .kitchenArea:
-            return .kitchenArea
-        case .officeSpace:
-            return .officeSpace
-        }
-    }
+    public let infoBytes: Data? // if null, the data is from a CrowdNotifier V2 QR Code
+    public let countryData: Data
 }
 
 public extension VenueInfo {

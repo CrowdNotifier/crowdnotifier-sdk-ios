@@ -18,14 +18,27 @@ final class CryptoUtils {
 
     private static let NONCE_LENGTH: Int = 32
 
+    private struct DomainKeys {
+        static let hkdf = "CrowdNotifier_v3"
+        static let preid = "CN-PREID"
+        static let id = "CN-ID"
+    }
+
     public static func createEncryptedVenueVisits(id: String, arrivalTime: Date, departureTime: Date, venueInfo: VenueInfo) -> [EncryptedVenueVisit] {
         var masterPublicKey = mclBnG2()
-        mclBnG2_deserialize(&masterPublicKey, venueInfo.masterPublicKey.bytes, venueInfo.masterPublicKey.bytes.count)
+        mclBnG2_deserialize(&masterPublicKey, venueInfo.publicKey.bytes, venueInfo.publicKey.bytes.count)
 
         var encryptedVisits = [EncryptedVenueVisit]()
 
         for hour in arrivalTime.hoursSince1970...departureTime.hoursSince1970 {
-            guard let identity = generateIdentity(hour: hour, venueInfo: venueInfo) else {
+            let identity_: Bytes?
+            if let infoBytes = venueInfo.infoBytes {
+                identity_ = generateIdentityV3(hour: hour, infoBytes: infoBytes.bytes)
+            } else {
+                identity_ = generateIdentityV2(hour: hour, venueInfo: venueInfo)
+            }
+
+            guard let identity = identity_ else {
                 continue
             }
 
@@ -61,19 +74,33 @@ final class CryptoUtils {
                 continue
             }
 
-            var decryptedMessageString = ""
-            if let decryptedMessage = crypto_secretbox_open_easy(key: payload.notificationKey.bytes, cipherText: eventInfo.encryptedMessage, nonce: eventInfo.nonce), let string = String(data: decryptedMessage.data, encoding: .utf8) {
-                decryptedMessageString = string
+            if let decryptedBytes = crypto_secretbox_open_easy(key: payload.notificationKey.bytes, cipherText: eventInfo.encryptedAssociatedData, nonce: eventInfo.cipherTextNonce), let associatedData = try? AssociatedData(serializedData: decryptedBytes.data) {
+                let event = ExposureEvent(checkinId: visit.id,
+                                          arrivalTime: payload.arrivalTime,
+                                          departureTime: payload.departureTime,
+                                          message: associatedData.message,
+                                          countryData: associatedData.countryData)
+                exposureEvents.append(event)
             }
-
-            let event = ExposureEvent(checkinId: visit.id,
-                                      arrivalTime: payload.arrivalTime,
-                                      departureTime: payload.departureTime,
-                                      message: decryptedMessageString)
-            exposureEvents.append(event)
         }
 
         return exposureEvents
+    }
+
+    public static func getNoncesAndNotificationKey(infoBytes: Bytes) -> (nonce1: Bytes, nonce2: Bytes, notificationKey: Bytes)? {
+        // Length: 32 bytes each for nonce1, nonce2 & notification_key
+        let length = 32 + 32 + 32
+        let hkdfKey = HKDF.deriveKey(seed: infoBytes.data, info: Bytes(DomainKeys.hkdf.utf8).data, salt: Bytes().data, count: length)
+
+        guard hkdfKey.count == length else {
+            return nil
+        }
+
+        let nonce1 = Bytes(hkdfKey[0..<32])
+        let nonce2 = Bytes(hkdfKey[32..<64])
+        let notificationKey = Bytes(hkdfKey[64..<96])
+
+        return (nonce1, nonce2, notificationKey)
     }
 
     public static func createHKDFKey(length: Int, inputKey: Bytes, salt: Bytes, info: Bytes) -> Bytes {
@@ -180,8 +207,23 @@ final class CryptoUtils {
         return msg_p
     }
 
-    private static func generateIdentity(hour: Int, venueInfo: VenueInfo) -> Bytes? {
-        guard let venueBytes = venueInfo.toBytes(), let hash1 = crypto_hash_sha256(input: venueBytes + venueInfo.nonce1) else {
+    private static func generateIdentityV3(hour: Int, infoBytes: Bytes) -> Bytes? {
+        guard let (nonce1, nonce2, _) = getNoncesAndNotificationKey(infoBytes: infoBytes) else {
+            return nil
+        }
+
+        guard let preid = crypto_hash_sha256(input: Bytes(DomainKeys.preid.utf8) + infoBytes + nonce1) else {
+            return nil
+        }
+
+        let duration = Int32(bigEndian: 3600)
+        let intervalStart = Int64(bigEndian: Int64(hour * 3600))
+
+        return crypto_hash_sha256(input: Bytes(DomainKeys.id.utf8) + preid + duration.bytes + intervalStart.bytes + nonce2)
+    }
+
+    private static func generateIdentityV2(hour: Int, venueInfo: VenueInfo) -> Bytes? {
+        guard let venueBytes = venueInfoToBytes(venueInfo), let hash1 = crypto_hash_sha256(input: venueBytes + venueInfo.nonce1) else {
             return nil
         }
 
