@@ -12,7 +12,6 @@ import Foundation
 import libmcl
 import CrowdNotifierBaseSDK
 
-
 class CrowdNotifierMain {
     private let checkinStorage: CheckinStorage = .shared
     private let exposureStorage: ExposureStorage = .shared
