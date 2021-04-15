@@ -30,14 +30,14 @@ final class CryptoUtils {
         var encryptedVisits = [EncryptedVenueVisit]()
 
         for hour in arrivalTime.hoursSince1970...departureTime.hoursSince1970 {
-            let identity_: Bytes?
+            var identityBytes: Bytes?
             if let infoBytes = venueInfo.infoBytes {
-                identity_ = generateIdentityV3(hour: hour, infoBytes: infoBytes.bytes)
+                identityBytes = generateIdentityV3(startOfInterval: hour * 3600, infoBytes: infoBytes.bytes)
             } else {
-                identity_ = generateIdentityV2(hour: hour, venueInfo: venueInfo)
+                identityBytes = generateIdentityV2(hour: hour, venueInfo: venueInfo)
             }
 
-            guard let identity = identity_ else {
+            guard let identity = identityBytes else {
                 continue
             }
 
@@ -186,19 +186,19 @@ final class CryptoUtils {
         return msg_p
     }
 
-    private static func generateIdentityV3(hour: Int, infoBytes: Bytes) -> Bytes? {
+    public static func generateIdentityV3(startOfInterval: Int, infoBytes: Bytes) -> Bytes? {
         guard let (nonce1, nonce2, _) = CryptoUtilsBase.getNoncesAndNotificationKey(infoBytes: infoBytes) else {
             return nil
         }
 
-        guard let preid = crypto_hash_sha256(input: Bytes(DomainKeys.preid.utf8) + infoBytes + nonce1) else {
+        guard let preid = crypto_hash_sha256(input: DomainKeys.preid.bytes + infoBytes + nonce1) else {
             return nil
         }
 
         let duration = Int32(bigEndian: 3600)
-        let intervalStart = Int64(bigEndian: Int64(hour * 3600))
+        let intervalStart = Int64(bigEndian: Int64(startOfInterval))
 
-        return crypto_hash_sha256(input: Bytes(DomainKeys.id.utf8) + preid + duration.bytes + intervalStart.bytes + nonce2)
+        return crypto_hash_sha256(input: DomainKeys.id.bytes + preid + duration.bytes + intervalStart.bytes + nonce2)
     }
 
     private static func generateIdentityV2(hour: Int, venueInfo: VenueInfo) -> Bytes? {

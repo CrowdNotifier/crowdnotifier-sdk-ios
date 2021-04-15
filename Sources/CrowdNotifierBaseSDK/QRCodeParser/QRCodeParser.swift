@@ -145,7 +145,7 @@ class QRCodeParser {
 }
 
 private func base642bin(_ b64: String, ignore: String? = nil) -> Bytes? {
-    let b64Bytes = Bytes(b64.utf8).map(Int8.init)
+    let b64Bytes = b64.bytes.map(Int8.init)
     let b64BytesLen = b64Bytes.count
     let binBytesCapacity = b64BytesLen * 3 / 4 + 1
     var binBytes = Bytes(count: binBytesCapacity)

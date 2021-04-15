@@ -15,7 +15,7 @@ public final class CryptoUtilsBase {
     public static func getNoncesAndNotificationKey(infoBytes: Bytes) -> (nonce1: Bytes, nonce2: Bytes, notificationKey: Bytes)? {
         // Length: 32 bytes each for nonce1, nonce2 & notification_key
         let length = 32 + 32 + 32
-        let hkdfKey = HKDF.deriveKey(seed: infoBytes.data, info: Bytes(hkdfDomainKey.utf8).data, salt: Bytes().data, count: length)
+        let hkdfKey = HKDF.deriveKey(seed: infoBytes.data, info: hkdfDomainKey.bytes.data, salt: Bytes().data, count: length)
 
         guard hkdfKey.count == length else {
             return nil

@@ -26,6 +26,10 @@ public extension Array where Element == UInt8 {
     var data: Data { return Data(self) }
 }
 
+public extension Array where Element == Int8 {
+    var bytes: Bytes { return map { UInt8(bitPattern: $0) } }
+}
+
 public extension ArraySlice where Element == UInt8 {
     var bytes: Bytes { return Bytes(self) }
 }
