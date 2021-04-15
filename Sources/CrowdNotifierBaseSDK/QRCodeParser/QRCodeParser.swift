@@ -54,7 +54,7 @@ class QRCodeParser {
             return .failure(.invalidQRCode)
         }
 
-        guard let (nonce1, nonce2, notificationKey) = CryptoUtils.getNoncesAndNotificationKey(infoBytes: data.bytes) else {
+        guard let (nonce1, nonce2, notificationKey) = CryptoUtilsBase.getNoncesAndNotificationKey(infoBytes: data.bytes) else {
             return .failure(.invalidQRCode)
         }
 

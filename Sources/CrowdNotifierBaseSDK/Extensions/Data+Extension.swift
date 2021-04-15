@@ -34,10 +34,10 @@ public extension String {
     var bytes: Bytes { return Bytes(utf8) }
 }
 
-extension Int32 {
+public extension Int32 {
     var bytes: Bytes { return withUnsafeBytes(of: self, { Data($0) }).bytes }
 }
 
-extension Int64 {
+public extension Int64 {
     var bytes: Bytes { return withUnsafeBytes(of: self, { Data($0) }).bytes }
 }

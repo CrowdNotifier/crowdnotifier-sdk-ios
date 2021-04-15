@@ -19,7 +19,6 @@ final class CryptoUtils {
     private static let NONCE_LENGTH: Int = 32
 
     private struct DomainKeys {
-        static let hkdf = "CrowdNotifier_v3"
         static let preid = "CN-PREID"
         static let id = "CN-ID"
     }
@@ -85,26 +84,6 @@ final class CryptoUtils {
         }
 
         return exposureEvents
-    }
-
-    public static func getNoncesAndNotificationKey(infoBytes: Bytes) -> (nonce1: Bytes, nonce2: Bytes, notificationKey: Bytes)? {
-        // Length: 32 bytes each for nonce1, nonce2 & notification_key
-        let length = 32 + 32 + 32
-        let hkdfKey = HKDF.deriveKey(seed: infoBytes.data, info: Bytes(DomainKeys.hkdf.utf8).data, salt: Bytes().data, count: length)
-
-        guard hkdfKey.count == length else {
-            return nil
-        }
-
-        let nonce1 = Bytes(hkdfKey[0..<32])
-        let nonce2 = Bytes(hkdfKey[32..<64])
-        let notificationKey = Bytes(hkdfKey[64..<96])
-
-        return (nonce1, nonce2, notificationKey)
-    }
-
-    public static func createHKDFKey(length: Int, inputKey: Bytes, salt: Bytes, info: Bytes) -> Bytes {
-        return HKDF.deriveKey(seed: inputKey.data, info: info.data, salt: salt.data, count: length).bytes
     }
 
     // MARK: - Private helper methods
@@ -208,7 +187,7 @@ final class CryptoUtils {
     }
 
     private static func generateIdentityV3(hour: Int, infoBytes: Bytes) -> Bytes? {
-        guard let (nonce1, nonce2, _) = getNoncesAndNotificationKey(infoBytes: infoBytes) else {
+        guard let (nonce1, nonce2, _) = CryptoUtilsBase.getNoncesAndNotificationKey(infoBytes: infoBytes) else {
             return nil
         }
 
@@ -223,7 +202,7 @@ final class CryptoUtils {
     }
 
     private static func generateIdentityV2(hour: Int, venueInfo: VenueInfo) -> Bytes? {
-        guard let venueBytes = venueInfoToBytes(venueInfo), let hash1 = crypto_hash_sha256(input: venueBytes + venueInfo.nonce1) else {
+        guard let venueBytes = venueInfo.toBytes(), let hash1 = crypto_hash_sha256(input: venueBytes + venueInfo.nonce1) else {
             return nil
         }
 

@@ -49,12 +49,16 @@ public struct VenueInfo: Codable {
 }
 
 public extension VenueInfo {
-    public func toBytes() -> Bytes? {
+    func toBytes() -> Bytes? {
+        guard let locationData = try? NotifyMeLocationData(serializedData: countryData) else {
+            return nil
+        }
+
         var content = QRCodeContent()
-        content.name = self.name
-        content.location = self.location
-        content.room = self.room
-        content.venueType = .fromVenueType(self.venueType)
+        content.name = self.description
+        content.location = self.address
+        content.room = locationData.room
+        content.venueType = .fromVenueType(locationData.type)
 
         content.notificationKey = self.notificationKey
         content.validFrom = UInt64(self.validFrom)
