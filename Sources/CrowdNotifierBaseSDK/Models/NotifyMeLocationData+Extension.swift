@@ -10,7 +10,7 @@
 
 import Foundation
 
-extension NotifyMeLocationData.VenueType {
+public extension NotifyMeLocationData.VenueType {
     static func fromVenueType(_ type: QRCodeContent.VenueType) -> NotifyMeLocationData.VenueType {
         switch type {
         case .other:
@@ -39,9 +39,36 @@ extension NotifyMeLocationData.VenueType {
             return .other
         }
     }
+
+    static func fromVenueType(_ type: VenueInfo_v2.VenueType) -> NotifyMeLocationData.VenueType {
+        switch type {
+        case .other:
+            return .other
+        case .meetingRoom:
+            return .meetingRoom
+        case .cafeteria:
+            return .cafeteria
+        case .privateEvent:
+            return .privateEvent
+        case .canteen:
+            return .canteen
+        case .library:
+            return .library
+        case .lectureRoom:
+            return .lectureRoom
+        case .shop:
+            return .shop
+        case .gym:
+            return .gym
+        case .kitchenArea:
+            return .kitchenArea
+        case .officeSpace:
+            return .officeSpace
+        }
+    }
 }
 
-extension QRCodeContent.VenueType {
+public extension QRCodeContent.VenueType {
     static func fromVenueType(_ type: NotifyMeLocationData.VenueType) -> QRCodeContent.VenueType {
         switch type {
         case .other:

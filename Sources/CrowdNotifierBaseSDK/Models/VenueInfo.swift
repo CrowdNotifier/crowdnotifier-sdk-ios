@@ -24,6 +24,28 @@ public struct VenueInfo: Codable {
 
     public let infoBytes: Data? // if null, the data is from a CrowdNotifier V2 QR Code
     public let countryData: Data
+
+    public init(description: String,
+                address: String,
+                notificationKey: Data,
+                publicKey: Data,
+                nonce1: Data,
+                nonce2: Data,
+                validFrom: Int,
+                validTo: Int,
+                infoBytes: Data?,
+                countryData: Data) {
+        self.description = description
+        self.address = address
+        self.notificationKey = notificationKey
+        self.publicKey = publicKey
+        self.nonce1 = nonce1
+        self.nonce2 = nonce2
+        self.validFrom = validFrom
+        self.validTo = validTo
+        self.infoBytes = infoBytes
+        self.countryData = countryData
+    }
 }
 
 public extension VenueInfo {
@@ -39,34 +61,5 @@ public extension VenueInfo {
         content.validTo = UInt64(self.validTo)
 
         return try? content.serializedData().bytes
-    }
-}
-
-extension NMLocationData.VenueType {
-    static func fromVenueType(_ type: VenueInfo.VenueType) -> NMLocationData.VenueType {
-        switch type {
-        case .other:
-            return .other
-        case .meetingRoom:
-            return .meetingRoom
-        case .cafeteria:
-            return .cafeteria
-        case .privateEvent:
-            return .privateEvent
-        case .canteen:
-            return .canteen
-        case .library:
-            return .library
-        case .lectureRoom:
-            return .lectureRoom
-        case .shop:
-            return .shop
-        case .gym:
-            return gym
-        case .kitchenArea:
-            return .kitchenArea
-        case .officeSpace:
-            return .officeSpace
-        }
     }
 }
