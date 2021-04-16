@@ -19,8 +19,8 @@ public struct VenueInfo: Codable {
     public let nonce1: Data
     public let nonce2: Data
 
-    public let validFrom: Int
-    public let validTo: Int
+    public let validFrom: Int // milliseconds since 1970
+    public let validTo: Int // milliseconds since 1970
 
     public let infoBytes: Data? // if null, the data is from a CrowdNotifier V2 QR Code
     public let countryData: Data

@@ -66,11 +66,11 @@ class QRCodeParser {
         // check date validity
         let now = Date()
 
-        if Date(millisecondsSince1970: Int(payload.locationData.startTimestamp)) > now {
+        if Date(timeIntervalSince1970: TimeInterval(payload.locationData.startTimestamp)) > now {
             return .failure(.validFromError)
         }
 
-        if Date(millisecondsSince1970: Int(payload.locationData.endTimestamp)) < now {
+        if Date(timeIntervalSince1970: TimeInterval(payload.locationData.endTimestamp)) < now {
             return .failure(.validToError)
         }
 
@@ -80,8 +80,8 @@ class QRCodeParser {
                              publicKey: payload.crowdNotifierData.publicKey,
                              nonce1: nonce1.data,
                              nonce2: nonce2.data,
-                             validFrom: Int(payload.locationData.startTimestamp),
-                             validTo: Int(payload.locationData.endTimestamp),
+                             validFrom: Int(payload.locationData.startTimestamp) * 1000,
+                             validTo: Int(payload.locationData.endTimestamp) * 1000,
                              infoBytes: try? payload.serializedData(),
                              countryData: payload.countryData)
 
