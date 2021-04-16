@@ -9,7 +9,6 @@
  */
 
 import Foundation
-import CrowdNotifierBaseSDK
 import Clibsodium
 import libmcl
 import HKDF

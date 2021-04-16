@@ -10,7 +10,6 @@
 
 import Foundation
 import libmcl
-import CrowdNotifierBaseSDK
 
 class CrowdNotifierMain {
     private let checkinStorage: CheckinStorage = .shared

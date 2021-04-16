@@ -9,7 +9,6 @@
  */
 
 import Foundation
-import CrowdNotifierBaseSDK
 
 class CheckinStorage {
     private let userDefaults: UserDefaults = .standard

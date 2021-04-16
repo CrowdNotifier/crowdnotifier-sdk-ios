@@ -9,18 +9,9 @@
  */
 
 import Foundation
-import CrowdNotifierBaseSDK
+@_exported import CrowdNotifierBaseSDK
 
 private var instance: CrowdNotifierMain!
-
-// MARK: - Classes to be exposed from CrowdNotifierBaseSDK
-
-public typealias CrowdNotifierError = CrowdNotifierBaseSDK.CrowdNotifierError
-public typealias ExposureEvent = CrowdNotifierBaseSDK.ExposureEvent
-public typealias ProblematicEventInfo = CrowdNotifierBaseSDK.ProblematicEventInfo
-public typealias NotifyMeLocationData = CrowdNotifierBaseSDK.NotifyMeLocationData
-public typealias VenueInfo_v2 = CrowdNotifierBaseSDK.VenueInfo_v2
-public typealias VenueInfo = CrowdNotifierBaseSDK.VenueInfo
 
 // MARK: - API
 
