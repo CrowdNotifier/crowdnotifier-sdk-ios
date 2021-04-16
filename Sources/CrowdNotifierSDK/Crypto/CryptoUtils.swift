@@ -31,8 +31,8 @@ final class CryptoUtils {
 
         for hour in arrivalTime.hoursSince1970...departureTime.hoursSince1970 {
             var identityBytes: Bytes?
-            if let infoBytes = venueInfo.infoBytes {
-                identityBytes = generateIdentityV3(startOfInterval: hour * 3600, infoBytes: infoBytes.bytes)
+            if let qrCodePayload = venueInfo.qrCodePayload {
+                identityBytes = generateIdentityV3(startOfInterval: hour * 3600, qrCodePayload: qrCodePayload.bytes)
             } else {
                 identityBytes = generateIdentityV2(hour: hour, venueInfo: venueInfo)
             }
@@ -186,12 +186,12 @@ final class CryptoUtils {
         return msg_p
     }
 
-    public static func generateIdentityV3(startOfInterval: Int, infoBytes: Bytes) -> Bytes? {
-        guard let (nonce1, nonce2, _) = CryptoUtilsBase.getNoncesAndNotificationKey(infoBytes: infoBytes) else {
+    public static func generateIdentityV3(startOfInterval: Int, qrCodePayload: Bytes) -> Bytes? {
+        guard let (nonce1, nonce2, _) = CryptoUtilsBase.getNoncesAndNotificationKey(qrCodePayload: qrCodePayload) else {
             return nil
         }
 
-        guard let preid = crypto_hash_sha256(input: DomainKeys.preid.bytes + infoBytes + nonce1) else {
+        guard let preid = crypto_hash_sha256(input: DomainKeys.preid.bytes + qrCodePayload + nonce1) else {
             return nil
         }
 

@@ -22,7 +22,7 @@ public struct VenueInfo: Codable {
     public let validFrom: Int // milliseconds since 1970
     public let validTo: Int // milliseconds since 1970
 
-    public let infoBytes: Data? // if null, the data is from a CrowdNotifier V2 QR Code
+    public let qrCodePayload: Data? // if null, the data is from a CrowdNotifier V2 QR Code
     public let countryData: Data
 
     public init(description: String,
@@ -33,7 +33,7 @@ public struct VenueInfo: Codable {
                 nonce2: Data,
                 validFrom: Int,
                 validTo: Int,
-                infoBytes: Data?,
+                qrCodePayload: Data?,
                 countryData: Data) {
         self.description = description
         self.address = address
@@ -43,7 +43,7 @@ public struct VenueInfo: Codable {
         self.nonce2 = nonce2
         self.validFrom = validFrom
         self.validTo = validTo
-        self.infoBytes = infoBytes
+        self.qrCodePayload = qrCodePayload
         self.countryData = countryData
     }
 }
