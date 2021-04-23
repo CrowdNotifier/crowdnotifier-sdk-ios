@@ -6,7 +6,8 @@ on:
   pull_request:
 
 jobs:
-  sdk:
+  build-and-test:
+    name: Build & Tests
     runs-on: macOS-latest
 
     steps:
@@ -16,7 +17,7 @@ jobs:
     - name: Switch to Xcode 12.4
       run: sudo xcode-select --switch /Applications/Xcode_12.4.app
 
-    - name: Fastlane test
+    - name: Fastlane
       run: fastlane tests
 
     - name: Publish Unit Test Results
@@ -29,6 +30,6 @@ jobs:
       if: ${{ always() }}
       uses: actions/upload-artifact@v2
       with:
-        name: logs
+        name: build-test-logs
         path: build
       
