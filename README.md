@@ -94,7 +94,16 @@ let allExposures = CrowdNotifier.getExposureEvents()
 // Clean up old entries
 CrowdNotifier.cleanUpOldData(maxDaysToKeep: 10)
 ```
+### Build and Distribute
 
+You need to modify the Xcode build settings to build the application using CrowdNotfier:
+
+- Set `ENABLE_BITCODE` to: `NO`
+
+There is a known bug in the current Xcode SPM integration with static `binaryTargets`. Xcode copies the .a files into the resulting product in the `/Frameworks` folder (in addition to linking them to the binary). So if you are using SPM, it will be necessary to remove .a-Files from the package before it is distributed. It can be done by adding a post action to the scheme with the following commands:
+```
+rm -rf "${TARGET_BUILD_DIR}/${PRODUCT_NAME}.app/Frameworks/*.a"
+```
 
 ## Static methods of CrowdNotifier
 
