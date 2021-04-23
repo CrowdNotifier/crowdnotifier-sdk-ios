@@ -18,11 +18,17 @@ jobs:
 
     - name: Fastlane test
       run: fastlane tests
-    
+
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      if: always()
+      with:
+        files: build/**/*.xml
+
     - name: Archive logs
       if: ${{ always() }}
       uses: actions/upload-artifact@v2
       with:
         name: logs
-        path: fastlane
+        path: build
       
