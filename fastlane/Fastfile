@@ -1,19 +1,15 @@
 default_platform(:ios)
 
 platform :ios do
-  before_all do
-    spm(
-      command: "generate-xcodeproj",
-      xcconfig: "Sources/Config.xcconfig"
-    )
-  end
-  
-  lane :test do
+  desc "Run the unit tests."
+  lane :tests do
+    # Use xcodebuild directly as Fastlane's scan does not yet support pure SPM projects 
+    # See https://github.com/fastlane/fastlane/discussions/17362
 
-    multi_scan(
-      try_count: 3,
-      parallel_testrun_count: 1
+    xcodebuild(
+        scheme: "CrowdNotifierSDK-Package",
+        xcargs: "-sdk iphoneos -destination 'platform=iOS Simulator,name=iPhone SE (2nd generation)' -resultBundlePath ./build/testresults.xcresult test",
+        buildlog_path: "./build/"
     )
-
   end
 end
