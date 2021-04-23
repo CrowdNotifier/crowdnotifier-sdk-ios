@@ -31,6 +31,7 @@ final class CryptoUtils {
         for hour in arrivalTime.hoursSince1970...departureTime.hoursSince1970 {
             var identityBytes: Bytes?
             if let qrCodePayload = venueInfo.qrCodePayload {
+                // Since v3, startOfInterval needs to be in secondsSince1970, so the hour values have to be corrected
                 identityBytes = generateIdentityV3(startOfInterval: hour * 3600, qrCodePayload: qrCodePayload.bytes)
             } else {
                 identityBytes = generateIdentityV2(hour: hour, venueInfo: venueInfo)
@@ -194,7 +195,7 @@ final class CryptoUtils {
             return nil
         }
 
-        let duration = Int32(bigEndian: 3600)
+        let duration = Int32(bigEndian: 3600) // at the moment, hour buckets are used
         let intervalStart = Int64(bigEndian: Int64(startOfInterval))
 
         return crypto_hash_sha256(input: DomainKeys.id.bytes + preid + duration.bytes + intervalStart.bytes + nonce2)
