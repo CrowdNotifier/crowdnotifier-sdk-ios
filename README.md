@@ -2,6 +2,7 @@
 
 [![Swift Package Manager compatible](https://img.shields.io/badge/SPM-%E2%9C%93-brightgreen.svg?style=flat)](https://github.com/apple/swift-package-manager)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://github.com/CrowdNotifier/crowdnotifier-sdk-ios/blob/develop/LICENSE)
+[![Build & Tests](https://github.com/CrowdNotifier/crowdnotifier-sdk-ios/actions/workflows/build.yml/badge.svg)](https://github.com/CrowdNotifier/crowdnotifier-sdk-ios/actions/workflows/build.yml)
 
 This repository contains a work-in-progress SDK for presence tracing based on the [CrowdNotifier protocol](https://github.com/CrowdNotifier/documents). The API and the underlying protocols are subject to change.
 

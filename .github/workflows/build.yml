@@ -24,7 +24,7 @@ jobs:
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
       with:
-        files: build/**/*.xml
+        files: build/*.xml
 
     - name: Archive logs
       if: ${{ always() }}
