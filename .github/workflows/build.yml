@@ -1,10 +1,9 @@
-name: build
+name: Build & Test
 
 on:
   push:
     branches: [ master, develop ]
   pull_request:
-    branches: [ master, develop ]
 
 jobs:
   sdk:
@@ -14,30 +13,16 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
-    - name: Switch to Xcode 12
-      run: sudo xcode-select --switch /Applications/Xcode_12.app
+    - name: Switch to Xcode 12.4
+      run: sudo xcode-select --switch /Applications/Xcode_12.4.app
 
     - name: Fastlane test
-      run: fastlane test
+      run: fastlane tests
     
     - name: Archive logs
       if: ${{ always() }}
       uses: actions/upload-artifact@v2
       with:
         name: logs
-        path: fastlane/test_output
+        path: fastlane
       
-  sampleapp:
-    runs-on: macOS-latest
-
-    steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
-
-    - name: Switch to Xcode 12
-      run: sudo xcode-select --switch /Applications/Xcode_12.app
-
-    # Compile sample app for iOS Simulator (no signing)
-    - name: Compile and run tests
-      run: fastlane gym --project SampleApp/N2StepSampleApp.xcodeproj --scheme "Debug" --skip_package_ipa true --destination "generic/platform=iOS Simulator"
-
