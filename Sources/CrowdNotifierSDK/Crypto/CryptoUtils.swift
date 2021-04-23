@@ -9,22 +9,35 @@
  */
 
 import Foundation
-import CrowdNotifierBaseSDK
 import Clibsodium
 import libmcl
+import HKDF
 
 final class CryptoUtils {
 
     private static let NONCE_LENGTH: Int = 32
 
+    private struct DomainKeys {
+        static let preid = "CN-PREID"
+        static let id = "CN-ID"
+    }
+
     public static func createEncryptedVenueVisits(id: String, arrivalTime: Date, departureTime: Date, venueInfo: VenueInfo) -> [EncryptedVenueVisit] {
         var masterPublicKey = mclBnG2()
-        mclBnG2_deserialize(&masterPublicKey, venueInfo.masterPublicKey.bytes, venueInfo.masterPublicKey.bytes.count)
+        mclBnG2_deserialize(&masterPublicKey, venueInfo.publicKey.bytes, venueInfo.publicKey.bytes.count)
 
         var encryptedVisits = [EncryptedVenueVisit]()
 
         for hour in arrivalTime.hoursSince1970...departureTime.hoursSince1970 {
-            guard let identity = generateIdentity(hour: hour, venueInfo: venueInfo) else {
+            var identityBytes: Bytes?
+            if let qrCodePayload = venueInfo.qrCodePayload {
+                // Since v3, startOfInterval needs to be in secondsSince1970, so the hour values have to be corrected
+                identityBytes = generateIdentityV3(startOfInterval: hour * 3600, qrCodePayload: qrCodePayload.bytes)
+            } else {
+                identityBytes = generateIdentityV2(hour: hour, venueInfo: venueInfo)
+            }
+
+            guard let identity = identityBytes else {
                 continue
             }
 
@@ -60,20 +73,20 @@ final class CryptoUtils {
                 continue
             }
 
-            var decryptedMessageString = ""
-            if let decryptedMessage = crypto_secretbox_open_easy(key: payload.notificationKey.bytes, cipherText: eventInfo.encryptedMessage, nonce: eventInfo.nonce), let string = String(data: decryptedMessage.data, encoding: .utf8) {
-                decryptedMessageString = string
+            if let decryptedBytes = crypto_secretbox_open_easy(key: payload.notificationKey.bytes, cipherText: eventInfo.encryptedAssociatedData, nonce: eventInfo.cipherTextNonce), let associatedData = try? AssociatedData(serializedData: decryptedBytes.data) {
+                let event = ExposureEvent(checkinId: visit.id,
+                                          arrivalTime: payload.arrivalTime,
+                                          departureTime: payload.departureTime,
+                                          message: associatedData.message,
+                                          countryData: associatedData.countryData)
+                exposureEvents.append(event)
             }
-
-            let event = ExposureEvent(checkinId: visit.id,
-                                      arrivalTime: payload.arrivalTime,
-                                      departureTime: payload.departureTime,
-                                      message: decryptedMessageString)
-            exposureEvents.append(event)
         }
 
         return exposureEvents
     }
+
+    // MARK: - Private helper methods
 
     private static func encryptInternal(message: Bytes, identity: Bytes, masterPublicKey: mclBnG2) -> EncryptedData? {
         let nonceX = randombytes_buf()
@@ -173,7 +186,22 @@ final class CryptoUtils {
         return msg_p
     }
 
-    private static func generateIdentity(hour: Int, venueInfo: VenueInfo) -> Bytes? {
+    public static func generateIdentityV3(startOfInterval: Int, qrCodePayload: Bytes) -> Bytes? {
+        guard let (nonce1, nonce2, _) = CryptoUtilsBase.getNoncesAndNotificationKey(qrCodePayload: qrCodePayload) else {
+            return nil
+        }
+
+        guard let preid = crypto_hash_sha256(input: DomainKeys.preid.bytes + qrCodePayload + nonce1) else {
+            return nil
+        }
+
+        let duration = Int32(bigEndian: 3600) // at the moment, hour buckets are used
+        let intervalStart = Int64(bigEndian: Int64(startOfInterval))
+
+        return crypto_hash_sha256(input: DomainKeys.id.bytes + preid + duration.bytes + intervalStart.bytes + nonce2)
+    }
+
+    private static func generateIdentityV2(hour: Int, venueInfo: VenueInfo) -> Bytes? {
         guard let venueBytes = venueInfo.toBytes(), let hash1 = crypto_hash_sha256(input: venueBytes + venueInfo.nonce1) else {
             return nil
         }

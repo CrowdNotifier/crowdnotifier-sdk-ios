@@ -11,17 +11,19 @@
 import Foundation
 
 public struct ExposureEvent: Codable {
-    public init(checkinId: String, arrivalTime: Date, departureTime: Date, message: String) {
+    public init(checkinId: String, arrivalTime: Date, departureTime: Date, message: String, countryData: Data?) {
         self.checkinId = checkinId
         self.arrivalTime = arrivalTime
         self.departureTime = departureTime
         self.message = message
+        self.countryData = countryData
     }
 
     public let checkinId: String
     public let arrivalTime: Date
     public let departureTime: Date
     public let message: String
+    public let countryData: Data?
 }
 
 extension ExposureEvent: Equatable {

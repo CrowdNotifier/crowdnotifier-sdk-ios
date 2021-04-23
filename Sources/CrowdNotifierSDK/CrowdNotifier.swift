@@ -9,9 +9,11 @@
  */
 
 import Foundation
-import CrowdNotifierBaseSDK
+@_exported import CrowdNotifierBaseSDK
 
 private var instance: CrowdNotifierMain!
+
+// MARK: - API
 
 public enum CrowdNotifier {
     /// The current version of the SDK

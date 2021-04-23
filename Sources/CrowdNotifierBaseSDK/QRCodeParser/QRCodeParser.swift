@@ -12,8 +12,9 @@ import Clibsodium
 import Foundation
 
 class QRCodeParser {
-    private static let currentVersion = 2
+    private static let currentVersion = 3
     private static let minimumVersion = 2
+    private static let lastLegacyVersion = 2
     private static let urlVersionKey = "v"
 
     func extractVenueInformation(from qrCode: String, baseUrl: String) -> Result<VenueInfo, CrowdNotifierError> {
@@ -40,7 +41,55 @@ class QRCodeParser {
             return .failure(.invalidQRCode)
         }
 
-        guard let entry = try? QRCodeEntry(serializedData: decoded.data) else {
+        if version > QRCodeParser.lastLegacyVersion {
+            return extractVenueInfoV3(data: decoded.data)
+        } else {
+            return extractVenueInfoV2(data: decoded.data)
+        }
+    }
+
+    private func extractVenueInfoV3(data: Data) -> Result<VenueInfo, CrowdNotifierError> {
+        guard let payload = try? QRCodePayload(serializedData: data) else {
+            print("Could not create code from data")
+            return .failure(.invalidQRCode)
+        }
+
+        guard let (nonce1, nonce2, notificationKey) = CryptoUtilsBase.getNoncesAndNotificationKey(qrCodePayload: data.bytes) else {
+            return .failure(.invalidQRCode)
+        }
+
+        // check version
+        if isInvalidVersion(Int(payload.version)) {
+            return .failure(.invalidQRCodeVersion)
+        }
+
+        // check date validity
+        let now = Date()
+
+        if Date(timeIntervalSince1970: TimeInterval(payload.locationData.startTimestamp)) > now {
+            return .failure(.validFromError)
+        }
+
+        if Date(timeIntervalSince1970: TimeInterval(payload.locationData.endTimestamp)) < now {
+            return .failure(.validToError)
+        }
+
+        let info = VenueInfo(description: payload.locationData.description_p,
+                             address: payload.locationData.address,
+                             notificationKey: notificationKey.data,
+                             publicKey: payload.crowdNotifierData.publicKey,
+                             nonce1: nonce1.data,
+                             nonce2: nonce2.data,
+                             validFrom: Int(payload.locationData.startTimestamp) * 1000,
+                             validTo: Int(payload.locationData.endTimestamp) * 1000,
+                             qrCodePayload: try? payload.serializedData(),
+                             countryData: payload.countryData)
+
+        return .success(info)
+    }
+
+    private func extractVenueInfoV2(data: Data) -> Result<VenueInfo, CrowdNotifierError> {
+        guard let entry = try? QRCodeEntry(serializedData: data) else {
             print("Could not create code from data")
             return .failure(.invalidQRCode)
         }
@@ -63,16 +112,25 @@ class QRCodeParser {
 
         let content = entry.data
 
-        let info = VenueInfo(name: content.name,
-                             location: content.location,
-                             room: content.room,
-                             venueType: .fromVenueType(content.venueType),
-                             masterPublicKey: entry.masterPublicKey,
+        // For backwards compatibility, manually create a NotifyMeLocationData object to put into countryData
+        var locationData = NotifyMeLocationData()
+        locationData.room = content.room
+        locationData.type = .fromVenueType(content.venueType)
+
+        guard let countryData = try? locationData.serializedData() else {
+            return .failure(.invalidQRCode)
+        }
+
+        let info = VenueInfo(description: content.name,
+                             address: content.location,
+                             notificationKey: content.notificationKey,
+                             publicKey: entry.masterPublicKey,
                              nonce1: entry.entryProof.nonce1,
                              nonce2: entry.entryProof.nonce2,
-                             notificationKey: content.notificationKey,
                              validFrom: Int(content.validFrom),
-                             validTo: Int(content.validTo))
+                             validTo: Int(content.validTo),
+                             qrCodePayload: nil,
+                             countryData: countryData)
 
         return .success(info)
     }
@@ -87,7 +145,7 @@ class QRCodeParser {
 }
 
 private func base642bin(_ b64: String, ignore: String? = nil) -> Bytes? {
-    let b64Bytes = Bytes(b64.utf8).map(Int8.init)
+    let b64Bytes = b64.bytes.map(Int8.init)
     let b64BytesLen = b64Bytes.count
     let binBytesCapacity = b64BytesLen * 3 / 4 + 1
     var binBytes = Bytes(count: binBytesCapacity)

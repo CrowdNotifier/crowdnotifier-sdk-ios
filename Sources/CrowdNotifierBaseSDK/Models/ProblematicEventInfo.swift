@@ -15,15 +15,20 @@ public struct ProblematicEventInfo {
     public let secretKeyForIdentity: Bytes
     public let startTimestamp: Date
     public let endTimestamp: Date
-    public let encryptedMessage: Bytes
-    public let nonce: Bytes
+    public let encryptedAssociatedData: Bytes
+    public let cipherTextNonce: Bytes
 
-    public init(identity: Bytes, secretKeyForIdentity: Bytes, startTimestamp: Date, endTimestamp: Date, encryptedMessage: Bytes, nonce: Bytes) {
+    public init(identity: Bytes,
+                secretKeyForIdentity: Bytes,
+                startTimestamp: Date,
+                endTimestamp: Date,
+                encryptedAssociatedData: Bytes,
+                cipherTextNonce: Bytes) {
         self.identity = identity
         self.secretKeyForIdentity = secretKeyForIdentity
         self.startTimestamp = startTimestamp
         self.endTimestamp = endTimestamp
-        self.encryptedMessage = encryptedMessage
-        self.nonce = nonce
+        self.encryptedAssociatedData = encryptedAssociatedData
+        self.cipherTextNonce = cipherTextNonce
     }
 }

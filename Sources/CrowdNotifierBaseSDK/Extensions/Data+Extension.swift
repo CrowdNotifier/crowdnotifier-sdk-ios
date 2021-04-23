@@ -26,10 +26,22 @@ public extension Array where Element == UInt8 {
     var data: Data { return Data(self) }
 }
 
+public extension Array where Element == Int8 {
+    var bytes: Bytes { return map { UInt8(bitPattern: $0) } }
+}
+
 public extension ArraySlice where Element == UInt8 {
     var bytes: Bytes { return Bytes(self) }
 }
 
 public extension String {
     var bytes: Bytes { return Bytes(utf8) }
+}
+
+public extension Int32 {
+    var bytes: Bytes { return withUnsafeBytes(of: self, { Data($0) }).bytes }
+}
+
+public extension Int64 {
+    var bytes: Bytes { return withUnsafeBytes(of: self, { Data($0) }).bytes }
 }
