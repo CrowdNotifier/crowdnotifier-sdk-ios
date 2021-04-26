@@ -17,7 +17,7 @@ public struct EncryptedData: Codable {
         self.c3 = c3
         self.nonce = nonce
     }
-    
+
     public let c1: Data
     public let c2: Data
     public let c3: Data

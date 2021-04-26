@@ -23,7 +23,8 @@ public struct ProblematicEventInfo {
                 startTimestamp: Date,
                 endTimestamp: Date,
                 encryptedAssociatedData: Bytes,
-                cipherTextNonce: Bytes) {
+                cipherTextNonce: Bytes)
+    {
         self.identity = identity
         self.secretKeyForIdentity = secretKeyForIdentity
         self.startTimestamp = startTimestamp

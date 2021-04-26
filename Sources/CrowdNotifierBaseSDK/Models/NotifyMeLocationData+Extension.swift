@@ -35,7 +35,7 @@ public extension NotifyMeLocationData.VenueType {
             return .kitchenArea
         case .officeSpace:
             return .officeSpace
-        case .UNRECOGNIZED(_):
+        case .UNRECOGNIZED:
             return .other
         }
     }
@@ -93,7 +93,7 @@ public extension QRCodeContent.VenueType {
             return .kitchenArea
         case .officeSpace:
             return .officeSpace
-        case .UNRECOGNIZED(_):
+        case .UNRECOGNIZED:
             return .other
         }
     }
