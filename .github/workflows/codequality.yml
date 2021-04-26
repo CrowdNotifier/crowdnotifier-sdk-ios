@@ -19,10 +19,3 @@ jobs:
     - name: swiftformat
       run: swiftformat Sources,Tests --exclude "**.pb.swift" --lint
 
-    - name: Archive logs
-      if: ${{ always() }}
-      uses: actions/upload-artifact@v2
-      with:
-        name: codequality-logs
-        path: build
-      
