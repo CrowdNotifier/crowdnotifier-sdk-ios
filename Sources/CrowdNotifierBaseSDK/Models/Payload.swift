@@ -16,7 +16,7 @@ public struct Payload: Codable {
         self.departureTime = departureTime
         self.notificationKey = notificationKey
     }
-    
+
     public let arrivalTime: Date
     public let departureTime: Date
     public let notificationKey: Data

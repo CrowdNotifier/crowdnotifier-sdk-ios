@@ -16,7 +16,7 @@ public struct EncryptedVenueVisit: Codable {
         self.daysSince1970 = daysSince1970
         self.encryptedData = encryptedData
     }
-    
+
     public let id: String
     public let daysSince1970: Int
     public let encryptedData: EncryptedData

@@ -8,8 +8,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import Foundation
 @_exported import CrowdNotifierBaseSDK
+import Foundation
 
 private var instance: CrowdNotifierMain!
 

@@ -38,5 +38,3 @@ public struct VenueInfo_v2: Codable {
     public let validFrom: Int
     public let validTo: Int
 }
-
-

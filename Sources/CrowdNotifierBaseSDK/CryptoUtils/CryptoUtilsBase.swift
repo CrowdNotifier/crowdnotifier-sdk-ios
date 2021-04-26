@@ -11,8 +11,7 @@
 import Foundation
 import HKDF
 
-public final class CryptoUtilsBase {
-
+public enum CryptoUtilsBase {
     private static let hkdfDomainKey = "CrowdNotifier_v3"
 
     public static func getNoncesAndNotificationKey(qrCodePayload: Bytes) -> (nonce1: Bytes, nonce2: Bytes, notificationKey: Bytes)? {
@@ -24,9 +23,9 @@ public final class CryptoUtilsBase {
             return nil
         }
 
-        let nonce1 = Bytes(hkdfKey[0..<32])
-        let nonce2 = Bytes(hkdfKey[32..<64])
-        let notificationKey = Bytes(hkdfKey[64..<96])
+        let nonce1 = Bytes(hkdfKey[0 ..< 32])
+        let nonce2 = Bytes(hkdfKey[32 ..< 64])
+        let notificationKey = Bytes(hkdfKey[64 ..< 96])
 
         return (nonce1, nonce2, notificationKey)
     }
