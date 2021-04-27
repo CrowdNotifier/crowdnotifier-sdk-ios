@@ -29,15 +29,7 @@ final class CryptoUtils {
         var encryptedVisits = [EncryptedVenueVisit]()
 
         for hour in arrivalTime.hoursSince1970...departureTime.hoursSince1970 {
-            var identityBytes: Bytes?
-            if let qrCodePayload = venueInfo.qrCodePayload {
-                // Since v3, startOfInterval needs to be in secondsSince1970, so the hour values have to be corrected
-                identityBytes = generateIdentityV3(startOfInterval: hour * 3600, qrCodePayload: qrCodePayload.bytes)
-            } else {
-                identityBytes = generateIdentityV2(hour: hour, venueInfo: venueInfo)
-            }
-
-            guard let identity = identityBytes else {
+            guard let identity = generateIdentityV3(startOfInterval: hour * 3600, qrCodePayload: venueInfo.qrCodePayload.bytes) else {
                 continue
             }
 
@@ -241,14 +233,6 @@ final class CryptoUtils {
         let intervalStart = Int64(bigEndian: Int64(startOfInterval))
 
         return crypto_hash_sha256(input: DomainKeys.id.bytes + preid + duration.bytes + intervalStart.bytes + nonce2)
-    }
-
-    private static func generateIdentityV2(hour: Int, venueInfo: VenueInfo) -> Bytes? {
-        guard let venueBytes = venueInfo.toBytes(), let hash1 = crypto_hash_sha256(input: venueBytes + venueInfo.nonce1) else {
-            return nil
-        }
-
-        return crypto_hash_sha256(input: hash1 + venueInfo.nonce2 + "\(hour)".bytes)
     }
 
     private static func crypto_secretbox_easy(secretKey: Bytes, message: Bytes, nonce: Bytes) -> Bytes? {

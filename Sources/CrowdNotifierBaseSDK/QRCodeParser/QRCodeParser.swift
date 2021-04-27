@@ -13,8 +13,7 @@ import Foundation
 
 class QRCodeParser {
     private static let currentVersion = 3
-    private static let minimumVersion = 2
-    private static let lastLegacyVersion = 2
+    private static let minimumVersion = 3
     private static let urlVersionKey = "v"
 
     func extractVenueInformation(from qrCode: String, baseUrl: String) -> Result<VenueInfo, CrowdNotifierError> {
@@ -41,11 +40,7 @@ class QRCodeParser {
             return .failure(.invalidQRCode)
         }
 
-        if version > QRCodeParser.lastLegacyVersion {
-            return extractVenueInfoV3(data: decoded.data)
-        } else {
-            return extractVenueInfoV2(data: decoded.data)
-        }
+        return extractVenueInfoV3(data: decoded.data)
     }
 
     private func extractVenueInfoV3(data: Data) -> Result<VenueInfo, CrowdNotifierError> {
@@ -74,6 +69,10 @@ class QRCodeParser {
             return .failure(.validToError)
         }
 
+        guard let qrCodePayload = try? payload.serializedData() else {
+            return .failure(.invalidQRCode)
+        }
+
         let info = VenueInfo(description: payload.locationData.description_p,
                              address: payload.locationData.address,
                              notificationKey: notificationKey.data,
@@ -82,55 +81,8 @@ class QRCodeParser {
                              nonce2: nonce2.data,
                              validFrom: Int(payload.locationData.startTimestamp) * 1000,
                              validTo: Int(payload.locationData.endTimestamp) * 1000,
-                             qrCodePayload: try? payload.serializedData(),
+                             qrCodePayload: qrCodePayload,
                              countryData: payload.countryData)
-
-        return .success(info)
-    }
-
-    private func extractVenueInfoV2(data: Data) -> Result<VenueInfo, CrowdNotifierError> {
-        guard let entry = try? QRCodeEntry(serializedData: data) else {
-            print("Could not create code from data")
-            return .failure(.invalidQRCode)
-        }
-
-        // check version
-        if isInvalidVersion(Int(entry.version)) {
-            return .failure(.invalidQRCodeVersion)
-        }
-
-        // check date validity
-        let now = Date()
-
-        if Date(millisecondsSince1970: Int(entry.data.validFrom)) > now {
-            return .failure(.validFromError)
-        }
-
-        if Date(millisecondsSince1970: Int(entry.data.validTo)) < now {
-            return .failure(.validToError)
-        }
-
-        let content = entry.data
-
-        // For backwards compatibility, manually create a NotifyMeLocationData object to put into countryData
-        var locationData = NotifyMeLocationData()
-        locationData.room = content.room
-        locationData.type = .fromVenueType(content.venueType)
-
-        guard let countryData = try? locationData.serializedData() else {
-            return .failure(.invalidQRCode)
-        }
-
-        let info = VenueInfo(description: content.name,
-                             address: content.location,
-                             notificationKey: content.notificationKey,
-                             publicKey: entry.masterPublicKey,
-                             nonce1: entry.entryProof.nonce1,
-                             nonce2: entry.entryProof.nonce2,
-                             validFrom: Int(content.validFrom),
-                             validTo: Int(content.validTo),
-                             qrCodePayload: nil,
-                             countryData: countryData)
 
         return .success(info)
     }
