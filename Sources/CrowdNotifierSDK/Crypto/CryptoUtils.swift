@@ -8,16 +8,15 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import Foundation
 import Clibsodium
-import libmcl
+import Foundation
 import HKDF
+import libmcl
 
 final class CryptoUtils {
-
     private static let NONCE_LENGTH: Int = 32
 
-    private struct DomainKeys {
+    private enum DomainKeys {
         static let preid = "CN-PREID"
         static let id = "CN-ID"
     }
@@ -28,7 +27,7 @@ final class CryptoUtils {
 
         var encryptedVisits = [EncryptedVenueVisit]()
 
-        for hour in arrivalTime.hoursSince1970...departureTime.hoursSince1970 {
+        for hour in arrivalTime.hoursSince1970 ... departureTime.hoursSince1970 {
             guard let identity = generateIdentityV3(startOfInterval: hour * 3600, qrCodePayload: venueInfo.qrCodePayload.bytes) else {
                 continue
             }
@@ -281,7 +280,7 @@ final class CryptoUtils {
         assert(a.count == b.count, "a and b must have equal length")
 
         var c = Bytes(count: a.count)
-        for i in 0..<a.count {
+        for i in 0 ..< a.count {
             c[i] = a[i] ^ b[i]
         }
 
@@ -290,13 +289,13 @@ final class CryptoUtils {
 
     private static func baseG2() -> mclBnG2 {
         let baseString = ("1 3527010695874666181871391160110601448900299527927752" +
-                            "40219908644239793785735715026873347600343865175952761926303160 " +
-                            "305914434424421370997125981475378163698647032547664755865937320" +
-                            "6291635324768958432433509563104347017837885763365758 " +
-                            "198515060228729193556805452117717163830086897821565573085937866" +
-                            "5066344726373823718423869104263333984641494340347905 " +
-                            "927553665492332455747201965776037880757740193453592970025027978" +
-                            "793976877002675564980949289727957565575433344219582").bytes.map(Int8.init)
+            "40219908644239793785735715026873347600343865175952761926303160 " +
+            "305914434424421370997125981475378163698647032547664755865937320" +
+            "6291635324768958432433509563104347017837885763365758 " +
+            "198515060228729193556805452117717163830086897821565573085937866" +
+            "5066344726373823718423869104263333984641494340347905 " +
+            "927553665492332455747201965776037880757740193453592970025027978" +
+            "793976877002675564980949289727957565575433344219582").bytes.map(Int8.init)
 
         var baseG2 = mclBnG2()
         mclBnG2_setStr(&baseG2, baseString, baseString.count, 10)
@@ -314,5 +313,4 @@ final class CryptoUtils {
 
         return String(validatingUTF8: b64Bytes)
     }
-
 }

@@ -1,0 +1,5 @@
+# Disable some rules we don't want
+--disable wrapMultilineStatementBraces, elseOnSameLine, initCoderUnavailable, redundantType
+
+# Don't format generated protobuf wrappers
+--exclude **/*.pb.swift

@@ -32,6 +32,6 @@ public extension Date {
             return []
         }
 
-        return Array(self.hoursSince1970...date.hoursSince1970)
+        return Array(hoursSince1970 ... date.hoursSince1970)
     }
 }

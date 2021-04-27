@@ -117,6 +117,6 @@ private func base642bin(_ b64: String, ignore: String? = nil) -> Bytes? {
 }
 
 private func getQueryStringParameter(url: URL, param: String) -> String? {
-  guard let url = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return nil }
-  return url.queryItems?.first(where: { $0.name == param })?.value
+    guard let url = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return nil }
+    return url.queryItems?.first(where: { $0.name == param })?.value
 }
