@@ -34,8 +34,7 @@ public struct VenueInfo: Codable {
                 validFrom: Int,
                 validTo: Int,
                 qrCodePayload: Data?,
-                countryData: Data)
-    {
+                countryData: Data) {
         self.description = description
         self.address = address
         self.notificationKey = notificationKey
