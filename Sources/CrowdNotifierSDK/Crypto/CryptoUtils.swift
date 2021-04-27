@@ -86,6 +86,48 @@ final class CryptoUtils {
         return exposureEvents
     }
 
+    public static func generateQRCodeString(baseUrl: String, masterPublicKey: Bytes, description: String, address: String, startTimestamp: Date, endTimestamp: Date, countryData: Data?) -> Result<(VenueInfo, String), CrowdNotifierError> {
+        var traceLocation = TraceLocation()
+        traceLocation.version = 3
+        traceLocation.description_p = description
+        traceLocation.address = address
+        traceLocation.startTimestamp = UInt64(startTimestamp.timeIntervalSince1970)
+        traceLocation.endTimestamp = UInt64(endTimestamp.timeIntervalSince1970)
+
+        var crowdNotifierData = CrowdNotifierData()
+        crowdNotifierData.version = 3
+        crowdNotifierData.publicKey = masterPublicKey.data
+        crowdNotifierData.cryptographicSeed = randombytes_buf().data
+        crowdNotifierData.type = 1
+
+        var payload = QRCodePayload()
+        payload.version = 3
+        payload.locationData = traceLocation
+        payload.crowdNotifierData = crowdNotifierData
+        payload.countryData = countryData ?? Data()
+
+        guard var components = URLComponents(string: baseUrl) else {
+            return .failure(.qrCodeGenerationError)
+        }
+        components.queryItems = [URLQueryItem(name: "v", value: "3")]
+        guard let data = try? payload.serializedData(), let fragment = binToBase64(bytes: data.bytes) else {
+            return .failure(.qrCodeGenerationError)
+        }
+        components.fragment = fragment
+
+        guard let urlString = components.url?.absoluteString else {
+            return .failure(.qrCodeGenerationError)
+        }
+
+        guard let (nonce1, nonce2, notificationKey) = CryptoUtilsBase.getNoncesAndNotificationKey(qrCodePayload: data.bytes) else {
+            return .failure(.qrCodeGenerationError)
+        }
+
+        let venueInfo = VenueInfo(description: description, address: address, notificationKey: notificationKey.data, publicKey: masterPublicKey.data, nonce1: nonce1.data, nonce2: nonce2.data, validFrom: startTimestamp.millisecondsSince1970, validTo: endTimestamp.millisecondsSince1970, qrCodePayload: data, countryData: payload.countryData)
+
+        return .success((venueInfo, urlString))
+    }
+
     // MARK: - Private helper methods
 
     private static func encryptInternal(message: Bytes, identity: Bytes, masterPublicKey: mclBnG2) -> EncryptedData? {
@@ -276,6 +318,17 @@ final class CryptoUtils {
         mclBnG2_setStr(&baseG2, baseString, baseString.count, 10)
 
         return baseG2
+    }
+
+    private static func binToBase64(bytes: Bytes) -> String? {
+        let b64BytesLength = sodium_base64_encoded_len(bytes.count, sodium_base64_VARIANT_URLSAFE_NO_PADDING)
+        var b64Bytes = Bytes(count: b64BytesLength).map(Int8.init)
+
+        guard sodium_bin2base64(&b64Bytes, b64BytesLength, bytes, bytes.count, sodium_base64_VARIANT_URLSAFE_NO_PADDING) != nil else {
+            return nil
+        }
+
+        return String(validatingUTF8: b64Bytes)
     }
 
 }

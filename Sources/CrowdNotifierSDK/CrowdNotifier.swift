@@ -17,7 +17,7 @@ private var instance: CrowdNotifierMain!
 
 public enum CrowdNotifier {
     /// The current version of the SDK
-    public static let frameworkVersion: String = "1.0"
+    public static let frameworkVersion: String = "3.0"
 
     public static func initialize() {
         precondition(instance == nil, "CrowdNotifierSDK already initialized")
@@ -43,6 +43,11 @@ public enum CrowdNotifier {
     public static func checkForMatches(problematicEventInfos: [ProblematicEventInfo]) -> [ExposureEvent] {
         instancePrecondition()
         return instance.checkForMatches(problematicEventInfos: problematicEventInfos)
+    }
+
+    public static func generateQRCodeString(baseUrl: String, masterPublicKey: Bytes, description: String, address: String, startTimestamp: Date, endTimestamp: Date, countryData: Data?) -> Result<(VenueInfo, String), CrowdNotifierError> {
+        instancePrecondition()
+        return instance.generateQRCodeString(baseUrl: baseUrl, masterPublicKey: masterPublicKey, description: description, address: address, startTimestamp: startTimestamp, endTimestamp: endTimestamp, countryData: countryData)
     }
 
     public static func getExposureEvents() -> [ExposureEvent] {
