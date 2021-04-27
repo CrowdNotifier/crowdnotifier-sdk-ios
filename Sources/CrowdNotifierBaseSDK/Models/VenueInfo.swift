@@ -55,14 +55,14 @@ public extension VenueInfo {
         }
 
         var content = QRCodeContent()
-        content.name = self.description
-        content.location = self.address
+        content.name = description
+        content.location = address
         content.room = locationData.room
         content.venueType = .fromVenueType(locationData.type)
 
-        content.notificationKey = self.notificationKey
-        content.validFrom = UInt64(self.validFrom)
-        content.validTo = UInt64(self.validTo)
+        content.notificationKey = notificationKey
+        content.validFrom = UInt64(validFrom)
+        content.validTo = UInt64(validTo)
 
         return try? content.serializedData().bytes
     }

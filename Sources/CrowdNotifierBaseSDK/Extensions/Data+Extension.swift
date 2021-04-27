@@ -39,9 +39,9 @@ public extension String {
 }
 
 public extension Int32 {
-    var bytes: Bytes { return withUnsafeBytes(of: self, { Data($0) }).bytes }
+    var bytes: Bytes { return withUnsafeBytes(of: self) { Data($0) }.bytes }
 }
 
 public extension Int64 {
-    var bytes: Bytes { return withUnsafeBytes(of: self, { Data($0) }).bytes }
+    var bytes: Bytes { return withUnsafeBytes(of: self) { Data($0) }.bytes }
 }

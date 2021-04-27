@@ -11,7 +11,6 @@
 import Foundation
 
 struct TestVector: Decodable {
-
     let identityTestVector: [IdentityTestVector]
     let hkdfTestVector: [HkdfTestVector]
 

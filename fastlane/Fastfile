@@ -11,5 +11,10 @@ platform :ios do
         xcargs: "-sdk iphoneos -destination 'platform=iOS Simulator,name=iPhone SE (2nd generation)' -resultBundlePath ./build/testresults.xcresult test",
         buildlog_path: "./build/"
     )
+
+    trainer(
+        output_directory: "./build/",
+        path: "./build/",
+        fail_build: false)
   end
 end
