@@ -17,5 +17,5 @@ jobs:
       run: sudo xcode-select --switch /Applications/Xcode_12.4.app
 
     - name: swiftformat
-      run: swiftformat Sources,Tests --exclude "**.pb.swift" --lint
+      run: swiftformat Sources,Tests --lint
 
