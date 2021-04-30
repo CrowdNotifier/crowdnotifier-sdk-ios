@@ -54,7 +54,7 @@ class QRCodeParser {
             return .failure(.invalidQRCode)
         }
 
-        guard let (nonce1, nonce2, notificationKey) = CryptoUtilsBase.getNoncesAndNotificationKey(qrCodePayload: data.bytes) else {
+        guard let (noncePreId, nonceTimekey, notificationKey) = CryptoUtilsBase.getNoncesAndNotificationKey(qrCodePayload: data.bytes) else {
             return .failure(.invalidQRCode)
         }
 
@@ -78,8 +78,8 @@ class QRCodeParser {
                              address: payload.locationData.address,
                              notificationKey: notificationKey.data,
                              publicKey: payload.crowdNotifierData.publicKey,
-                             nonce1: nonce1.data,
-                             nonce2: nonce2.data,
+                             noncePreId: noncePreId.data,
+                             nonceTimekey: nonceTimekey.data,
                              validFrom: Int(payload.locationData.startTimestamp) * 1000,
                              validTo: Int(payload.locationData.endTimestamp) * 1000,
                              qrCodePayload: try? payload.serializedData(),
@@ -125,8 +125,8 @@ class QRCodeParser {
                              address: content.location,
                              notificationKey: content.notificationKey,
                              publicKey: entry.masterPublicKey,
-                             nonce1: entry.entryProof.nonce1,
-                             nonce2: entry.entryProof.nonce2,
+                             noncePreId: entry.entryProof.nonce1,
+                             nonceTimekey: entry.entryProof.nonce2,
                              validFrom: Int(content.validFrom),
                              validTo: Int(content.validTo),
                              qrCodePayload: nil,

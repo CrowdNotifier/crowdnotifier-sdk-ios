@@ -22,8 +22,8 @@ struct TestVector: Decodable {
 
     struct HkdfTestVector: Decodable {
         let qrCodePayload: [Int8]
-        let nonce1: [Int8]
-        let nonce2: [Int8]
+        let noncePreId: [Int8]
+        let nonceTimekey: [Int8]
         let notificationKey: [Int8]
     }
 }
