@@ -35,6 +35,10 @@ class CrowdNotifierMain {
         return CryptoUtils.generateQRCodeString(baseUrl: baseUrl, masterPublicKey: masterPublicKey, description: description, address: address, startTimestamp: startTimestamp, endTimestamp: endTimestamp, countryData: countryData)
     }
 
+    func generateIdentities(venueInfo: VenueInfo, arrivalTime: Date, departureTime: Date) -> [Bytes] {
+        return CryptoUtils.generateIdentitiesV3(venueInfo: venueInfo, arrivalTime: arrivalTime, departureTime: departureTime)
+    }
+
     private func addOrUpdateCheckin(checkinId: String? = nil, venueInfo: VenueInfo, arrivalTime: Date, departureTime: Date) -> Result<String, CrowdNotifierError> {
         if let existingId = checkinId {
             checkinStorage.removeVisits(with: existingId)

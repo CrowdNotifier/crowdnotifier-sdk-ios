@@ -119,6 +119,12 @@ final class CryptoUtils {
         return .success((venueInfo, urlString))
     }
 
+    public static func generateIdentitiesV3(venueInfo: VenueInfo, arrivalTime: Date, departureTime: Date) -> [Bytes] {
+        return (arrivalTime.hoursSince1970 ... departureTime.hoursSince1970).compactMap {
+            generateIdentityV3(startOfInterval: $0 * 3600, qrCodePayload: venueInfo.qrCodePayload.bytes)
+        }
+    }
+
     // MARK: - Private helper methods
 
     private static func encryptInternal(message: Bytes, identity: Bytes, masterPublicKey: mclBnG2) -> EncryptedData? {
