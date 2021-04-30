@@ -14,8 +14,8 @@ import HKDF
 public enum CryptoUtilsBase {
     private static let hkdfDomainKey = "CrowdNotifier_v3"
 
-    public static func getNoncesAndNotificationKey(qrCodePayload: Bytes) -> (nonce1: Bytes, nonce2: Bytes, notificationKey: Bytes)? {
-        // Length: 32 bytes each for nonce1, nonce2 & notification_key
+    public static func getNoncesAndNotificationKey(qrCodePayload: Bytes) -> (noncePreId: Bytes, nonceTimekey: Bytes, notificationKey: Bytes)? {
+        // Length: 32 bytes each for noncePreId, nonceTimekey & notificationKey
         let length = 32 + 32 + 32
         let hkdfKey = HKDF.deriveKey(seed: qrCodePayload.data, info: hkdfDomainKey.bytes.data, salt: Bytes().data, count: length)
 
@@ -23,10 +23,10 @@ public enum CryptoUtilsBase {
             return nil
         }
 
-        let nonce1 = Bytes(hkdfKey[0 ..< 32])
-        let nonce2 = Bytes(hkdfKey[32 ..< 64])
+        let noncePreId = Bytes(hkdfKey[0 ..< 32])
+        let nonceTimekey = Bytes(hkdfKey[32 ..< 64])
         let notificationKey = Bytes(hkdfKey[64 ..< 96])
 
-        return (nonce1, nonce2, notificationKey)
+        return (noncePreId, nonceTimekey, notificationKey)
     }
 }

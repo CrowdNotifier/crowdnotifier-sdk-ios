@@ -18,6 +18,7 @@ final class CryptoUtils {
 
     private enum DomainKeys {
         static let preid = "CN-PREID"
+        static let timekey = "CN-TIMEKEY"
         static let id = "CN-ID"
     }
 
@@ -186,26 +187,27 @@ final class CryptoUtils {
     }
 
     public static func generateIdentityV3(startOfInterval: Int, qrCodePayload: Bytes) -> Bytes? {
-        guard let (nonce1, nonce2, _) = CryptoUtilsBase.getNoncesAndNotificationKey(qrCodePayload: qrCodePayload) else {
+        guard let (noncePreId, nonceTimekey, _) = CryptoUtilsBase.getNoncesAndNotificationKey(qrCodePayload: qrCodePayload) else {
             return nil
         }
 
-        guard let preid = crypto_hash_sha256(input: DomainKeys.preid.bytes + qrCodePayload + nonce1) else {
-            return nil
-        }
-
-        let duration = Int32(bigEndian: 3600) // at the moment, hour buckets are used
+        let intervalLength = Int32(bigEndian: 3600) // at the moment, hour buckets are used
         let intervalStart = Int64(bigEndian: Int64(startOfInterval))
 
-        return crypto_hash_sha256(input: DomainKeys.id.bytes + preid + duration.bytes + intervalStart.bytes + nonce2)
+        guard let preid = crypto_hash_sha256(input: DomainKeys.preid.bytes + qrCodePayload + noncePreId),
+              let timekey = crypto_hash_sha256(input: DomainKeys.timekey.bytes + intervalLength.bytes + intervalStart.bytes + nonceTimekey) else {
+            return nil
+        }
+
+        return crypto_hash_sha256(input: DomainKeys.id.bytes + preid + intervalLength.bytes + intervalStart.bytes + timekey)
     }
 
     private static func generateIdentityV2(hour: Int, venueInfo: VenueInfo) -> Bytes? {
-        guard let venueBytes = venueInfo.toBytes(), let hash1 = crypto_hash_sha256(input: venueBytes + venueInfo.nonce1) else {
+        guard let venueBytes = venueInfo.toBytes(), let hash1 = crypto_hash_sha256(input: venueBytes + venueInfo.noncePreId) else {
             return nil
         }
 
-        return crypto_hash_sha256(input: hash1 + venueInfo.nonce2 + "\(hour)".bytes)
+        return crypto_hash_sha256(input: hash1 + venueInfo.nonceTimekey + "\(hour)".bytes)
     }
 
     private static func crypto_secretbox_easy(secretKey: Bytes, message: Bytes, nonce: Bytes) -> Bytes? {
