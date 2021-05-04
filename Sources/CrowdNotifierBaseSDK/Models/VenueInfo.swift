@@ -16,8 +16,8 @@ public struct VenueInfo: Codable {
 
     public let notificationKey: Data
     public let publicKey: Data
-    public let nonce1: Data
-    public let nonce2: Data
+    public let noncePreId: Data
+    public let nonceTimekey: Data
 
     public let validFrom: Int // milliseconds since 1970
     public let validTo: Int // milliseconds since 1970
@@ -29,8 +29,8 @@ public struct VenueInfo: Codable {
                 address: String,
                 notificationKey: Data,
                 publicKey: Data,
-                nonce1: Data,
-                nonce2: Data,
+                noncePreId: Data,
+                nonceTimekey: Data,
                 validFrom: Int,
                 validTo: Int,
                 qrCodePayload: Data,
@@ -39,8 +39,8 @@ public struct VenueInfo: Codable {
         self.address = address
         self.notificationKey = notificationKey
         self.publicKey = publicKey
-        self.nonce1 = nonce1
-        self.nonce2 = nonce2
+        self.noncePreId = noncePreId
+        self.nonceTimekey = nonceTimekey
         self.validFrom = validFrom
         self.validTo = validTo
         self.qrCodePayload = qrCodePayload

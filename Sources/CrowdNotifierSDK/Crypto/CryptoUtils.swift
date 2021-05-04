@@ -18,6 +18,7 @@ final class CryptoUtils {
 
     private enum DomainKeys {
         static let preid = "CN-PREID"
+        static let timekey = "CN-TIMEKEY"
         static let id = "CN-ID"
     }
 
@@ -116,11 +117,11 @@ final class CryptoUtils {
             return .failure(.qrCodeGenerationError)
         }
 
-        guard let (nonce1, nonce2, notificationKey) = CryptoUtilsBase.getNoncesAndNotificationKey(qrCodePayload: data.bytes) else {
+        guard let (noncePreId, nonceTimekey, notificationKey) = CryptoUtilsBase.getNoncesAndNotificationKey(qrCodePayload: data.bytes) else {
             return .failure(.qrCodeGenerationError)
         }
 
-        let venueInfo = VenueInfo(description: description, address: address, notificationKey: notificationKey.data, publicKey: masterPublicKey.data, nonce1: nonce1.data, nonce2: nonce2.data, validFrom: startTimestamp.millisecondsSince1970, validTo: endTimestamp.millisecondsSince1970, qrCodePayload: data, countryData: payload.countryData)
+        let venueInfo = VenueInfo(description: description, address: address, notificationKey: notificationKey.data, publicKey: masterPublicKey.data, noncePreId: noncePreId.data, nonceTimekey: nonceTimekey.data, validFrom: startTimestamp.millisecondsSince1970, validTo: endTimestamp.millisecondsSince1970, qrCodePayload: data, countryData: payload.countryData)
 
         return .success((venueInfo, urlString))
     }
@@ -232,18 +233,19 @@ final class CryptoUtils {
     }
 
     public static func generateIdentityV3(startOfInterval: Int, qrCodePayload: Bytes) -> Bytes? {
-        guard let (nonce1, nonce2, _) = CryptoUtilsBase.getNoncesAndNotificationKey(qrCodePayload: qrCodePayload) else {
+        guard let (noncePreId, nonceTimekey, _) = CryptoUtilsBase.getNoncesAndNotificationKey(qrCodePayload: qrCodePayload) else {
             return nil
         }
 
-        guard let preid = crypto_hash_sha256(input: DomainKeys.preid.bytes + qrCodePayload + nonce1) else {
-            return nil
-        }
-
-        let duration = Int32(bigEndian: 3600) // at the moment, hour buckets are used
+        let intervalLength = Int32(bigEndian: 3600) // at the moment, hour buckets are used
         let intervalStart = Int64(bigEndian: Int64(startOfInterval))
 
-        return crypto_hash_sha256(input: DomainKeys.id.bytes + preid + duration.bytes + intervalStart.bytes + nonce2)
+        guard let preid = crypto_hash_sha256(input: DomainKeys.preid.bytes + qrCodePayload + noncePreId),
+              let timekey = crypto_hash_sha256(input: DomainKeys.timekey.bytes + intervalLength.bytes + intervalStart.bytes + nonceTimekey) else {
+            return nil
+        }
+
+        return crypto_hash_sha256(input: DomainKeys.id.bytes + preid + intervalLength.bytes + intervalStart.bytes + timekey)
     }
 
     private static func crypto_secretbox_easy(secretKey: Bytes, message: Bytes, nonce: Bytes) -> Bytes? {
