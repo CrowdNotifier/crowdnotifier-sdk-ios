@@ -57,15 +57,13 @@ class CrowdNotifierMain {
         var allExposureEvents = ExposureStorage.shared.exposureEvents
 
         for eventInfo in problematicEventInfos {
-            let matches = CryptoUtils.searchAndDecryptMatches(eventInfo: eventInfo, venueVisits: checkinStorage.encryptedVenueVisits)
+            // Only check visits with the same day as the problematic event
+            let matches = CryptoUtils.searchAndDecryptMatches(eventInfo: eventInfo, venueVisits: checkinStorage.encryptedVenueVisits.filter({ $0.daysSince1970 == eventInfo.day }))
 
             for match in matches {
-                // Check if time of visit actually overlaps with the problematic timeslot
-                if match.arrivalTime <= eventInfo.endTimestamp, match.departureTime >= eventInfo.startTimestamp {
-                    // Don't add the same checkin twice
-                    if !allExposureEvents.contains(match) {
-                        allExposureEvents.append(match)
-                    }
+                // Don't add the same checkin twice
+                if !allExposureEvents.contains(match) {
+                    allExposureEvents.append(match)
                 }
             }
         }
