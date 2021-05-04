@@ -50,9 +50,9 @@ public enum CrowdNotifier {
         return instance.generateQRCodeString(baseUrl: baseUrl, masterPublicKey: masterPublicKey, description: description, address: address, startTimestamp: startTimestamp, endTimestamp: endTimestamp, countryData: countryData)
     }
 
-    public static func generateIdentities(venueInfo: VenueInfo, arrivalTime: Date, departureTime: Date) -> [Bytes] {
+    public static func generateUserUploadInfo(venueInfo: VenueInfo, arrivalTime: Date, departureTime: Date) -> [UserUploadInfo] {
         instancePrecondition()
-        return instance.generateIdentities(venueInfo: venueInfo, arrivalTime: arrivalTime, departureTime: departureTime)
+        return instance.generateUserUploadInfo(venueInfo: venueInfo, arrivalTime: arrivalTime, departureTime: departureTime)
     }
 
     public static func getExposureEvents() -> [ExposureEvent] {

@@ -126,10 +126,31 @@ final class CryptoUtils {
         return .success((venueInfo, urlString))
     }
 
-    public static func generateIdentitiesV3(venueInfo: VenueInfo, arrivalTime: Date, departureTime: Date) -> [Bytes] {
-        return (arrivalTime.hoursSince1970 ... departureTime.hoursSince1970).compactMap {
-            generateIdentityV3(startOfInterval: $0 * 3600, qrCodePayload: venueInfo.qrCodePayload.bytes)
+    public static func generateUserUploadInfo(venueInfo: VenueInfo, arrivalTime: Date, departureTime: Date) -> [UserUploadInfo] {
+        var userUploadInfos = [UserUploadInfo]()
+
+        for hour in arrivalTime.hoursSince1970 ... departureTime.hoursSince1970 {
+            guard let (noncePreId, nonceTimekey, _) = CryptoUtilsBase.getNoncesAndNotificationKey(qrCodePayload: venueInfo.qrCodePayload.bytes) else {
+                continue
+            }
+
+            let intervalLength = Int32(bigEndian: 3600) // at the moment, hour buckets are used
+            let intervalStartBytes = Int64(bigEndian: Int64(hour * 3600)).bytes
+
+            guard let preid = crypto_hash_sha256(input: DomainKeys.preid.bytes + venueInfo.qrCodePayload.bytes + noncePreId),
+                  let timekey = crypto_hash_sha256(input: DomainKeys.timekey.bytes + intervalLength.bytes + intervalStartBytes + nonceTimekey) else {
+                continue
+            }
+
+            let startMs = hour * 60 * 60 * 1000
+            let endMs = (hour + 1) * 60 * 60 * 1000
+
+            let intervalStart = arrivalTime.millisecondsSince1970 > startMs ? arrivalTime.millisecondsSince1970 : startMs
+            let intervalEnd = departureTime.millisecondsSince1970 < endMs ? departureTime.millisecondsSince1970 : endMs
+            userUploadInfos.append(UserUploadInfo(preId: preid, timeKey: timekey, notificationKey: venueInfo.notificationKey.bytes, intervalStartMs: intervalStart, intervalEndMs: intervalEnd))
         }
+
+        return userUploadInfos
     }
 
     // MARK: - Private helper methods
