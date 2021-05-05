@@ -10,7 +10,7 @@
 
 import Foundation
 
-public struct UserUploadInfo: Codable {
+public struct UserUploadInfo: Codable, Equatable {
     public let preId: Bytes
     public let timeKey: Bytes
     public let notificationKey: Bytes

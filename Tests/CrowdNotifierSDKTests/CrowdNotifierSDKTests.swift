@@ -11,13 +11,14 @@
 import Foundation
 import XCTest
 
-@testable import CrowdNotifierBaseSDK
 @testable import CrowdNotifierSDK
 
 class CrowdNotifierSDKTests: XCTestCase {
     private let storage: CheckinStorage = .shared
 
     private let baseUrl = "https://qr.notify-me.ch"
+
+    private let masterPublicKey: Bytes = [Int8]([78, -92, 88, -118, 4, -52, -23, -123, 78, -17, -11, 9, 66, -21, -73, -41, -33, 102, 70, -88, -12, 113, 36, -23, -32, 53, -62, 22, 92, 91, -49, -43, 42, 12, -70, -64, 74, -67, 59, 11, -47, -55, 85, 102, 45, -105, 79, 21, -17, 17, -124, 25, 36, -105, 89, -76, 18, 69, -12, 109, -3, -70, -86, 12, -83, 7, 65, 1, -89, 103, -11, 86, 103, 20, -24, -93, -49, 45, -58, -40, 16, -42, 40, -5, -91, -126, 112, 104, 17, -64, 24, 105, -35, 44, -128, -117]).bytes
 
     private let qrCode = "https://qr.notify-me.ch/#CAESZAgBEiDwR2Oj0B1_XP1WeCfXRFIN0FylcYGP27HsEhANnE0KExoKSG9tZW9mZmljZSIHWnVoYXVzZSoFQsO8cm8wADogIiO_NrgF7RtaIoQqvPhCN1GoCKGK93p3XNYV7QJ7AjgaQNssfMm583dl88rNfgD8ZPMyRna_xO87g3sNp8zhYi9cbRJ1TKB_UWTBFiO5Tx9G0xbSSOx7qW54wrPwUzjDYQ4"
     private let wrongQrCode = "https://qr.notify-me.ch/#CAESZAgBEiDwR2Oj0B1_XP1WeCfRFIN0FylcYGP27HsEhANnE0KExoKSG9tZW9mZmljZSIHWnVoYXVzZSoFQsO8cm8wADogIiO_NrgF7RtaIoQqvPhCN1GoCKGK93p3XNYV7QJ7AjgaQNssfMm583dl88rNfgD8ZPMyRna_xO87g3sNp8zhYi9cbRJ1TKB_UWTBFiO5Tx9G0xbSSOx7qW54wrPwUzjDYQ4"
@@ -52,6 +53,24 @@ class CrowdNotifierSDKTests: XCTestCase {
       ]
     }
     """
+
+    private let userUploadInfosTestVector = [
+        UserUploadInfo(preId: [102, 168, 6, 51, 148, 105, 27, 207, 161, 224, 198, 28, 198, 237, 58, 28, 226, 147, 154, 0, 242, 43, 27, 25, 156, 86, 75, 3, 236, 153, 174, 216],
+                       timeKey: [222, 216, 255, 211, 72, 243, 10, 128, 187, 60, 87, 26, 73, 11, 161, 151, 79, 117, 252, 70, 118, 208, 115, 24, 57, 96, 100, 255, 35, 27, 112, 184],
+                       notificationKey: [46, 48, 221, 245, 12, 93, 245, 112, 165, 172, 103, 209, 180, 202, 168, 255, 111, 22, 118, 176, 157, 134, 162, 52, 113, 2, 14, 35, 160, 205, 177, 32],
+                       intervalStartMs: 1620140045000,
+                       intervalEndMs: 1620140400000),
+        UserUploadInfo(preId: [102, 168, 6, 51, 148, 105, 27, 207, 161, 224, 198, 28, 198, 237, 58, 28, 226, 147, 154, 0, 242, 43, 27, 25, 156, 86, 75, 3, 236, 153, 174, 216],
+                       timeKey: [202, 110, 23, 99, 202, 110, 240, 234, 251, 216, 228, 66, 167, 48, 101, 135, 103, 133, 220, 139, 162, 73, 21, 40, 162, 104, 153, 173, 195, 71, 15, 130],
+                       notificationKey: [46, 48, 221, 245, 12, 93, 245, 112, 165, 172, 103, 209, 180, 202, 168, 255, 111, 22, 118, 176, 157, 134, 162, 52, 113, 2, 14, 35, 160, 205, 177, 32],
+                       intervalStartMs: 1620140400000,
+                       intervalEndMs: 1620144000000),
+        UserUploadInfo(preId: [102, 168, 6, 51, 148, 105, 27, 207, 161, 224, 198, 28, 198, 237, 58, 28, 226, 147, 154, 0, 242, 43, 27, 25, 156, 86, 75, 3, 236, 153, 174, 216],
+                       timeKey: [201, 246, 160, 59, 53, 50, 171, 191, 223, 211, 18, 41, 162, 88, 149, 141, 137, 21, 187, 18, 172, 94, 16, 30, 110, 199, 175, 113, 231, 25, 204, 102],
+                       notificationKey: [46, 48, 221, 245, 12, 93, 245, 112, 165, 172, 103, 209, 180, 202, 168, 255, 111, 22, 118, 176, 157, 134, 162, 52, 113, 2, 14, 35, 160, 205, 177, 32],
+                       intervalStartMs: 1620144000000,
+                       intervalEndMs: 1620147245000)
+    ]
 
     override class func setUp() {
         CrowdNotifier.initialize()
@@ -101,6 +120,23 @@ class CrowdNotifierSDKTests: XCTestCase {
             XCTAssert(nonceTimekey == test.nonceTimekey.bytes, "nonceTimekey does not match")
             XCTAssert(notificationKey == test.notificationKey.bytes, "notificationKey does not match")
         }
+    }
+
+    func testUserUploadInfo() {
+        let venueInfo = VenueInfo(description: "Description",
+                                  address: "Address",
+                                  notificationKey: Bytes(arrayLiteral: 46,48,221,245,12,93,245,112,165,172,103,209,180,202,168,255,111,22,118,176,157,134,162,52,113,2,14,35,160,205,177,32).data,
+                                  publicKey: masterPublicKey.data,
+                                  noncePreId: Bytes(arrayLiteral: 238,72,16,125,45,198,247,47,219,170,81,212,113,62,203,22,63,78,223,29,183,168,16,31,137,26,76,131,171,226,10,169).data,
+                                  nonceTimekey: Bytes(arrayLiteral: 92,144,126,138,102,254,159,236,188,105,1,190,191,138,21,12,232,23,148,102,80,148,19,18,200,150,101,55,241,15,51,121).data,
+                                  validFrom: 1620140045000,
+                                  validTo: 1620147245000,
+                                  qrCodePayload: Bytes(arrayLiteral: 8,3,18,32,8,3,18,11,68,101,115,99,114,105,112,116,105,111,110,26,7,65,100,100,114,101,115,115,32,160,156,1,40,178,184,1,26,136,1,8,3,18,96,78,164,88,138,4,204,233,133,78,239,245,9,66,235,183,215,223,102,70,168,244,113,36,233,224,53,194,22,92,91,207,213,42,12,186,192,74,189,59,11,209,201,85,102,45,151,79,21,239,17,132,25,36,151,89,180,18,69,244,109,253,186,170,12,173,7,65,1,167,103,245,86,103,20,232,163,207,45,198,216,16,214,40,251,165,130,112,104,17,192,24,105,221,44,128,139,26,32,146,63,24,140,239,195,26,46,54,235,29,220,192,95,214,42,49,219,250,187,184,153,230,100,35,169,108,205,170,228,168,44,32,1).data,
+                                  countryData: Bytes().data)
+
+        let infos = CrowdNotifier.generateUserUploadInfo(venueInfo: venueInfo, arrivalTime: Date(millisecondsSince1970: 1620140045000), departureTime: Date(millisecondsSince1970: 1620147245000))
+
+        XCTAssert(infos == userUploadInfosTestVector, "UserUploadInfos does not match")
     }
 
     func testWrongQrCode() {
