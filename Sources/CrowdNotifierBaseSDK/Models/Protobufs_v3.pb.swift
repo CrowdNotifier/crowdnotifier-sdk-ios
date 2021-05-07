@@ -66,8 +66,10 @@ public struct TraceLocation {
 
   public var address: String = String()
 
+  /// UNIX timestamp in seconds
   public var startTimestamp: UInt64 = 0
 
+  /// UNIX timestamp in seconds
   public var endTimestamp: UInt64 = 0
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -136,9 +138,11 @@ public struct AssociatedData {
 
   public var version: Int32 = 0
 
-  public var startTime: Int64 = 0
+  /// UNIX timestamp in seconds
+  public var startTimestamp: Int64 = 0
 
-  public var endTime: Int64 = 0
+  /// UNIX timestamp in seconds
+  public var endTimestamp: Int64 = 0
 
   public var message: String = String()
 
@@ -411,8 +415,8 @@ extension AssociatedData: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
   public static let protoMessageName: String = "AssociatedData"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "version"),
-    2: .same(proto: "startTime"),
-    3: .same(proto: "endTime"),
+    2: .same(proto: "startTimestamp"),
+    3: .same(proto: "endTimestamp"),
     4: .same(proto: "message"),
     5: .same(proto: "countryData"),
   ]
@@ -424,8 +428,8 @@ extension AssociatedData: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularInt32Field(value: &self.version) }()
-      case 2: try { try decoder.decodeSingularInt64Field(value: &self.startTime) }()
-      case 3: try { try decoder.decodeSingularInt64Field(value: &self.endTime) }()
+      case 2: try { try decoder.decodeSingularInt64Field(value: &self.startTimestamp) }()
+      case 3: try { try decoder.decodeSingularInt64Field(value: &self.endTimestamp) }()
       case 4: try { try decoder.decodeSingularStringField(value: &self.message) }()
       case 5: try { try decoder.decodeSingularBytesField(value: &self.countryData) }()
       default: break
@@ -437,11 +441,11 @@ extension AssociatedData: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if self.version != 0 {
       try visitor.visitSingularInt32Field(value: self.version, fieldNumber: 1)
     }
-    if self.startTime != 0 {
-      try visitor.visitSingularInt64Field(value: self.startTime, fieldNumber: 2)
+    if self.startTimestamp != 0 {
+      try visitor.visitSingularInt64Field(value: self.startTimestamp, fieldNumber: 2)
     }
-    if self.endTime != 0 {
-      try visitor.visitSingularInt64Field(value: self.endTime, fieldNumber: 3)
+    if self.endTimestamp != 0 {
+      try visitor.visitSingularInt64Field(value: self.endTimestamp, fieldNumber: 3)
     }
     if !self.message.isEmpty {
       try visitor.visitSingularStringField(value: self.message, fieldNumber: 4)
@@ -454,8 +458,8 @@ extension AssociatedData: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
 
   public static func ==(lhs: AssociatedData, rhs: AssociatedData) -> Bool {
     if lhs.version != rhs.version {return false}
-    if lhs.startTime != rhs.startTime {return false}
-    if lhs.endTime != rhs.endTime {return false}
+    if lhs.startTimestamp != rhs.startTimestamp {return false}
+    if lhs.endTimestamp != rhs.endTimestamp {return false}
     if lhs.message != rhs.message {return false}
     if lhs.countryData != rhs.countryData {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}

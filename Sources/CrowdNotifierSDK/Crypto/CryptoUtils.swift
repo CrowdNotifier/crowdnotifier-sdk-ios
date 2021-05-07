@@ -66,8 +66,8 @@ final class CryptoUtils {
             }
 
             if let decryptedBytes = crypto_secretbox_open_easy(key: payload.notificationKey.bytes, cipherText: eventInfo.encryptedAssociatedData, nonce: eventInfo.cipherTextNonce), let associatedData = try? AssociatedData(serializedData: decryptedBytes.data) {
-                let startDate = Date(millisecondsSince1970: Int(associatedData.startTime))
-                let endDate = Date(millisecondsSince1970: Int(associatedData.endTime))
+                let startDate = Date(timeIntervalSince1970: TimeInterval(associatedData.startTimestamp))
+                let endDate = Date(timeIntervalSince1970: TimeInterval(associatedData.endTimestamp))
                 let event = ExposureEvent(checkinId: visit.id,
                                           arrivalTime: payload.arrivalTime,
                                           departureTime: payload.departureTime,
