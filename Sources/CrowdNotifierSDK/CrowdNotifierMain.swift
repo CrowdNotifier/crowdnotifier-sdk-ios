@@ -53,6 +53,10 @@ class CrowdNotifierMain {
         return .success(id)
     }
 
+    func removeCheckin(with checkinId: String) {
+        checkinStorage.removeVisits(with: checkinId)
+    }
+
     func checkForMatches(problematicEventInfos: [ProblematicEventInfo]) -> [ExposureEvent] {
         var allExposureEvents = ExposureStorage.shared.exposureEvents
 

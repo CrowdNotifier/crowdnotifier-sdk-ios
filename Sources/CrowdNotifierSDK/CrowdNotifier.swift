@@ -40,6 +40,11 @@ public enum CrowdNotifier {
         return instance.updateCheckin(checkinId: checkinId, venueInfo: venueInfo, newArrivalTime: newArrivalTime, newDepartureTime: newDepartureTime)
     }
 
+    public static func removeCheckin(with checkinId: String) {
+        instancePrecondition()
+        instance.removeCheckin(with: checkinId)
+    }
+
     public static func checkForMatches(problematicEventInfos: [ProblematicEventInfo]) -> [ExposureEvent] {
         instancePrecondition()
         return instance.checkForMatches(problematicEventInfos: problematicEventInfos)
