@@ -12,7 +12,7 @@ import Foundation
 import HKDF
 
 public enum CryptoUtilsBase {
-    private static let hkdfDomainKey = "CrowdNotifier_v4"
+    private static let hkdfDomainKey = "CrowdNotifier_v3"
 
     public static func getNoncesAndNotificationKey(qrCodePayload: Bytes) -> (noncePreId: Bytes, nonceTimekey: Bytes, notificationKey: Bytes)? {
         // Length: 32 bytes each for noncePreId, nonceTimekey & notificationKey
