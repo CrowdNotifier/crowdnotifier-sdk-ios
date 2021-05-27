@@ -86,20 +86,20 @@ final class CryptoUtils {
 
     public static func generateQRCodeString(baseUrl: String, masterPublicKey: Bytes, description: String, address: String, startTimestamp: Date, endTimestamp: Date, countryData: Data?) -> Result<(VenueInfo, String), CrowdNotifierError> {
         var traceLocation = TraceLocation()
-        traceLocation.version = 3
+        traceLocation.version = 4
         traceLocation.description_p = description
         traceLocation.address = address
         traceLocation.startTimestamp = UInt64(startTimestamp.timeIntervalSince1970)
         traceLocation.endTimestamp = UInt64(endTimestamp.timeIntervalSince1970)
 
         var crowdNotifierData = CrowdNotifierData()
-        crowdNotifierData.version = 3
+        crowdNotifierData.version = 4
         crowdNotifierData.publicKey = masterPublicKey.data
         crowdNotifierData.cryptographicSeed = randombytes_buf().data
         crowdNotifierData.type = 1
 
         var payload = QRCodePayload()
-        payload.version = 3
+        payload.version = 4
         payload.locationData = traceLocation
         payload.crowdNotifierData = crowdNotifierData
         payload.countryData = countryData ?? Data()
@@ -107,7 +107,7 @@ final class CryptoUtils {
         guard var components = URLComponents(string: baseUrl) else {
             return .failure(.qrCodeGenerationError)
         }
-        components.queryItems = [URLQueryItem(name: "v", value: "3")]
+        components.queryItems = [URLQueryItem(name: "v", value: "4")]
         guard let data = try? payload.serializedData(), let fragment = binToBase64(bytes: data.bytes) else {
             return .failure(.qrCodeGenerationError)
         }

@@ -12,8 +12,8 @@ import Clibsodium
 import Foundation
 
 class QRCodeParser {
-    private static let currentVersion = 3
-    private static let minimumVersion = 3
+    private static let currentVersion = 4
+    private static let minimumVersion = 4
     private static let urlVersionKey = "v"
 
     func extractVenueInformation(from qrCode: String, baseUrl: String) -> Result<VenueInfo, CrowdNotifierError> {
@@ -40,10 +40,10 @@ class QRCodeParser {
             return .failure(.invalidQRCode)
         }
 
-        return extractVenueInfoV3(data: decoded.data)
+        return extractVenueInfo(data: decoded.data)
     }
 
-    private func extractVenueInfoV3(data: Data) -> Result<VenueInfo, CrowdNotifierError> {
+    private func extractVenueInfo(data: Data) -> Result<VenueInfo, CrowdNotifierError> {
         guard let payload = try? QRCodePayload(serializedData: data) else {
             print("Could not create code from data")
             return .failure(.invalidQRCode)
