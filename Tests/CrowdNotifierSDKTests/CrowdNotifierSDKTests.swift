@@ -98,7 +98,7 @@ class CrowdNotifierSDKTests: XCTestCase {
         let testVector = try! JSONDecoder().decode(TestVector.self, from: jsonString.data(using: .utf8)!)
 
         for test in testVector.identityTestVector {
-            guard let identity = CryptoUtils.generateIdentityV3(startOfInterval: test.startOfInterval, qrCodePayload: test.qrCodePayload.bytes) else {
+            guard let identity = CryptoUtils.generateIdentity(startOfInterval: test.startOfInterval, qrCodePayload: test.qrCodePayload.bytes) else {
                 XCTFail("Failed to create identity")
                 return
             }
