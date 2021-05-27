@@ -45,6 +45,11 @@ public enum CrowdNotifier {
         instance.removeCheckin(with: checkinId)
     }
 
+    public static func hasCheckins() -> Bool {
+        instancePrecondition()
+        return instance.hasCheckins()
+    }
+
     public static func checkForMatches(problematicEventInfos: [ProblematicEventInfo]) -> [ExposureEvent] {
         instancePrecondition()
         return instance.checkForMatches(problematicEventInfos: problematicEventInfos)

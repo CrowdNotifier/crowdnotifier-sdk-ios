@@ -57,6 +57,10 @@ class CrowdNotifierMain {
         checkinStorage.removeVisits(with: checkinId)
     }
 
+    func hasCheckins() -> Bool {
+        return !checkinStorage.encryptedVenueVisits.isEmpty
+    }
+
     func checkForMatches(problematicEventInfos: [ProblematicEventInfo]) -> [ExposureEvent] {
         var allExposureEvents = ExposureStorage.shared.exposureEvents
 
