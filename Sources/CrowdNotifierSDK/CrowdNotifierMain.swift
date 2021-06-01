@@ -61,14 +61,15 @@ class CrowdNotifierMain {
         return !checkinStorage.encryptedVenueVisits.isEmpty
     }
 
-    func checkForMatches(problematicEventInfos: [ProblematicEventInfo]) -> [ExposureEvent] {
+    func checkForMatches(problematicEventInfos: [ProblematicEventInfo], requiredOverlap: TimeInterval) -> [ExposureEvent] {
         var allExposureEvents = ExposureStorage.shared.exposureEvents
 
         for eventInfo in problematicEventInfos {
             // Only check visits with the same day as the problematic event
             // eventInfo.day is in seconds, so we need to multiply daysSince1970 by 24 * 60 * 60
             let matches = CryptoUtils.searchAndDecryptMatches(eventInfo: eventInfo,
-                                                              venueVisits: checkinStorage.encryptedVenueVisits.filter { $0.daysSince1970 * 24 * 60 * 60 == eventInfo.day })
+                                                              venueVisits: checkinStorage.encryptedVenueVisits.filter { $0.daysSince1970 * 24 * 60 * 60 == eventInfo.day },
+                                                              requiredOverlap: requiredOverlap)
 
             for match in matches {
                 // Don't add the same checkin twice

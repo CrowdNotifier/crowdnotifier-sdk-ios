@@ -117,7 +117,7 @@ init | Initializes the SDK and configures it | `func initialize()`
 getVenueInfo | Returns information about the data contained in a QR code, or an error if the QR code does not have a valid format or does not match the expected base URL | `getVenueInfo(qrCode: String, baseUrl: String) -> Result<VenueInfo, CrowdNotifierError>`
 addCheckin | Stores a check-in given arrival time, departure time and the venue information. Returns the id of the stored entry. | `addCheckin(venueInfo: VenueInfo, arrivalTime: Date, departureTime: Date) -> Result<String, CrowdNotifierError>`
 updateCheckin | Updates a checkin that has previously been stored | `updateCheckin(checkinId: String, venueInfo: VenueInfo, newArrivalTime: Date, newDepartureTime: Date) -> Result<String, CrowdNotifierError>`
-checkForMatches | Given a set of published events with a known infected visitor, stores and returns those locally stored check-ins that overlap with one of the problematic events | `func checkForMatches(publishedSKs: [ProblematicEventInfo]) -> [ExposureEvent]`
+checkForMatches | Given a set of published events with a known infected visitor and optionally a required minimum overlap, stores and returns those locally stored check-ins that overlap with one of the problematic events | `func checkForMatches(publishedSKs: [ProblematicEventInfo], requiredOverlap: TimeInterval = 0) -> [ExposureEvent]`
 getExposureEvents | Returns all currently stored check-ins that have previously matched a problematic event | `getExposureEvents() -> [ExposureEvent]`
 removeExposure | Remove a exposure from the exposure storage | `removeExposure(exposure: ExposureEvent)`
 cleanUpOldData | Removes all check-ins that are older than the specified number of days | `func cleanUpOldData(maxDaysToKeep: Int)`

@@ -49,7 +49,7 @@ final class CryptoUtils {
         return encryptedVisits
     }
 
-    public static func searchAndDecryptMatches(eventInfo: ProblematicEventInfo, venueVisits: [EncryptedVenueVisit]) -> [ExposureEvent] {
+    public static func searchAndDecryptMatches(eventInfo: ProblematicEventInfo, venueVisits: [EncryptedVenueVisit], requiredOverlap: TimeInterval) -> [ExposureEvent] {
         var exposureEvents = [ExposureEvent]()
 
         for visit in venueVisits {
@@ -75,7 +75,8 @@ final class CryptoUtils {
                                           countryData: associatedData.countryData)
 
                 // Check if time of visit actually overlaps with the problematic timeslot
-                if event.departureTime >= startDate, event.arrivalTime <= endDate {
+                let overlap = max(requiredOverlap, 0)
+                if max(startDate, event.arrivalTime).addingTimeInterval(overlap) <= min(endDate, event.departureTime) {
                     exposureEvents.append(event)
                 }
             }

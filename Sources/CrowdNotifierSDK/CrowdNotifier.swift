@@ -50,9 +50,9 @@ public enum CrowdNotifier {
         return instance.hasCheckins()
     }
 
-    public static func checkForMatches(problematicEventInfos: [ProblematicEventInfo]) -> [ExposureEvent] {
+    public static func checkForMatches(problematicEventInfos: [ProblematicEventInfo], requiredOverlap: TimeInterval = 0) -> [ExposureEvent] {
         instancePrecondition()
-        return instance.checkForMatches(problematicEventInfos: problematicEventInfos)
+        return instance.checkForMatches(problematicEventInfos: problematicEventInfos, requiredOverlap: requiredOverlap)
     }
 
     public static func generateQRCodeString(baseUrl: String, masterPublicKey: Bytes, description: String, address: String, startTimestamp: Date, endTimestamp: Date, countryData: Data?) -> Result<(VenueInfo, String), CrowdNotifierError> {
