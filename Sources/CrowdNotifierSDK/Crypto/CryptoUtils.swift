@@ -75,14 +75,9 @@ final class CryptoUtils {
                                           countryData: associatedData.countryData)
 
                 // Check if time of visit actually overlaps with the problematic timeslot
-                if requiredOverlap >= 0 {
-                    if startDate.addingTimeInterval(requiredOverlap) <= event.departureTime || event.arrivalTime.addingTimeInterval(requiredOverlap) <= endDate {
-                        exposureEvents.append(event)
-                    }
-                } else {
-                    if event.departureTime >= startDate, event.arrivalTime <= endDate {
-                        exposureEvents.append(event)
-                    }
+                let overlap = max(requiredOverlap, 0)
+                if max(startDate, event.arrivalTime).addingTimeInterval(overlap) <= min(endDate, event.departureTime) {
+                    exposureEvents.append(event)
                 }
             }
         }
