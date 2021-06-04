@@ -38,8 +38,8 @@ message ProblematicEvent {
 
 message AssociatedData {
     int32 version = 1;
-    int64 startTimestamp = 2; // UNIX timestamp in seconds
-    int64 endTimestamp = 3; // UNIX timestamp in seconds
-    string message = 4;
+    string message = 2;
+    int64 startTimestamp = 3; // UNIX timestamp in seconds
+    int64 endTimestamp = 4; // UNIX timestamp in seconds
     bytes countryData = 5;
 }
