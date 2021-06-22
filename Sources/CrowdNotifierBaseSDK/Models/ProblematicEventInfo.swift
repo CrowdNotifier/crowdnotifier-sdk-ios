@@ -13,21 +13,18 @@ import Foundation
 public struct ProblematicEventInfo {
     public let identity: Bytes
     public let secretKeyForIdentity: Bytes
-    public let startTimestamp: Date
-    public let endTimestamp: Date
+    public let day: Int
     public let encryptedAssociatedData: Bytes
     public let cipherTextNonce: Bytes
 
     public init(identity: Bytes,
                 secretKeyForIdentity: Bytes,
-                startTimestamp: Date,
-                endTimestamp: Date,
+                day: Int,
                 encryptedAssociatedData: Bytes,
                 cipherTextNonce: Bytes) {
         self.identity = identity
         self.secretKeyForIdentity = secretKeyForIdentity
-        self.startTimestamp = startTimestamp
-        self.endTimestamp = endTimestamp
+        self.day = day
         self.encryptedAssociatedData = encryptedAssociatedData
         self.cipherTextNonce = cipherTextNonce
     }

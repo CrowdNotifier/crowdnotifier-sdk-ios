@@ -29,15 +29,7 @@ final class CryptoUtils {
         var encryptedVisits = [EncryptedVenueVisit]()
 
         for hour in arrivalTime.hoursSince1970 ... departureTime.hoursSince1970 {
-            var identityBytes: Bytes?
-            if let qrCodePayload = venueInfo.qrCodePayload {
-                // Since v3, startOfInterval needs to be in secondsSince1970, so the hour values have to be corrected
-                identityBytes = generateIdentityV3(startOfInterval: hour * 3600, qrCodePayload: qrCodePayload.bytes)
-            } else {
-                identityBytes = generateIdentityV2(hour: hour, venueInfo: venueInfo)
-            }
-
-            guard let identity = identityBytes else {
+            guard let identity = generateIdentity(startOfInterval: hour * 3600, qrCodePayload: venueInfo.qrCodePayload.bytes) else {
                 continue
             }
 
@@ -57,7 +49,7 @@ final class CryptoUtils {
         return encryptedVisits
     }
 
-    public static func searchAndDecryptMatches(eventInfo: ProblematicEventInfo, venueVisits: [EncryptedVenueVisit]) -> [ExposureEvent] {
+    public static func searchAndDecryptMatches(eventInfo: ProblematicEventInfo, venueVisits: [EncryptedVenueVisit], requiredOverlap: TimeInterval) -> [ExposureEvent] {
         var exposureEvents = [ExposureEvent]()
 
         for visit in venueVisits {
@@ -74,16 +66,92 @@ final class CryptoUtils {
             }
 
             if let decryptedBytes = crypto_secretbox_open_easy(key: payload.notificationKey.bytes, cipherText: eventInfo.encryptedAssociatedData, nonce: eventInfo.cipherTextNonce), let associatedData = try? AssociatedData(serializedData: decryptedBytes.data) {
+                let startDate = Date(timeIntervalSince1970: TimeInterval(associatedData.startTimestamp))
+                let endDate = Date(timeIntervalSince1970: TimeInterval(associatedData.endTimestamp))
                 let event = ExposureEvent(checkinId: visit.id,
                                           arrivalTime: payload.arrivalTime,
                                           departureTime: payload.departureTime,
                                           message: associatedData.message,
                                           countryData: associatedData.countryData)
-                exposureEvents.append(event)
+
+                // Check if time of visit actually overlaps with the problematic timeslot
+                let overlap = max(requiredOverlap, 0)
+                if max(startDate, event.arrivalTime).addingTimeInterval(overlap) <= min(endDate, event.departureTime) {
+                    exposureEvents.append(event)
+                }
             }
         }
 
         return exposureEvents
+    }
+
+    public static func generateQRCodeString(baseUrl: String, masterPublicKey: Bytes, description: String, address: String, startTimestamp: Date, endTimestamp: Date, countryData: Data?) -> Result<(VenueInfo, String), CrowdNotifierError> {
+        var traceLocation = TraceLocation()
+        traceLocation.version = 4
+        traceLocation.description_p = description
+        traceLocation.address = address
+        traceLocation.startTimestamp = UInt64(startTimestamp.timeIntervalSince1970)
+        traceLocation.endTimestamp = UInt64(endTimestamp.timeIntervalSince1970)
+
+        var crowdNotifierData = CrowdNotifierData()
+        crowdNotifierData.version = 4
+        crowdNotifierData.publicKey = masterPublicKey.data
+        crowdNotifierData.cryptographicSeed = randombytes_buf().data
+        crowdNotifierData.type = 1
+
+        var payload = QRCodePayload()
+        payload.version = 4
+        payload.locationData = traceLocation
+        payload.crowdNotifierData = crowdNotifierData
+        payload.countryData = countryData ?? Data()
+
+        guard var components = URLComponents(string: baseUrl) else {
+            return .failure(.qrCodeGenerationError)
+        }
+        components.queryItems = [URLQueryItem(name: "v", value: "4")]
+        guard let data = try? payload.serializedData(), let fragment = binToBase64(bytes: data.bytes) else {
+            return .failure(.qrCodeGenerationError)
+        }
+        components.fragment = fragment
+
+        guard let urlString = components.url?.absoluteString else {
+            return .failure(.qrCodeGenerationError)
+        }
+
+        guard let (noncePreId, nonceTimekey, notificationKey) = CryptoUtilsBase.getNoncesAndNotificationKey(qrCodePayload: data.bytes) else {
+            return .failure(.qrCodeGenerationError)
+        }
+
+        let venueInfo = VenueInfo(description: description, address: address, notificationKey: notificationKey.data, publicKey: masterPublicKey.data, noncePreId: noncePreId.data, nonceTimekey: nonceTimekey.data, validFrom: startTimestamp.millisecondsSince1970, validTo: endTimestamp.millisecondsSince1970, qrCodePayload: data, countryData: payload.countryData)
+
+        return .success((venueInfo, urlString))
+    }
+
+    public static func generateUserUploadInfo(venueInfo: VenueInfo, arrivalTime: Date, departureTime: Date) -> [UserUploadInfo] {
+        var userUploadInfos = [UserUploadInfo]()
+
+        for hour in arrivalTime.hoursSince1970 ... departureTime.hoursSince1970 {
+            guard let (noncePreId, nonceTimekey, _) = CryptoUtilsBase.getNoncesAndNotificationKey(qrCodePayload: venueInfo.qrCodePayload.bytes) else {
+                continue
+            }
+
+            let intervalLength = Int32(bigEndian: 3600) // at the moment, hour buckets are used
+            let intervalStartBytes = Int64(bigEndian: Int64(hour * 3600)).bytes
+
+            guard let preid = crypto_hash_sha256(input: DomainKeys.preid.bytes + venueInfo.qrCodePayload.bytes + noncePreId),
+                  let timekey = crypto_hash_sha256(input: DomainKeys.timekey.bytes + intervalLength.bytes + intervalStartBytes + nonceTimekey) else {
+                continue
+            }
+
+            let startMs = hour * 60 * 60 * 1000
+            let endMs = (hour + 1) * 60 * 60 * 1000
+
+            let intervalStart = arrivalTime.millisecondsSince1970 > startMs ? arrivalTime.millisecondsSince1970 : startMs
+            let intervalEnd = departureTime.millisecondsSince1970 < endMs ? departureTime.millisecondsSince1970 : endMs
+            userUploadInfos.append(UserUploadInfo(preId: preid, timeKey: timekey, notificationKey: venueInfo.notificationKey.bytes, intervalStartMs: intervalStart, intervalEndMs: intervalEnd))
+        }
+
+        return userUploadInfos
     }
 
     // MARK: - Private helper methods
@@ -186,7 +254,7 @@ final class CryptoUtils {
         return msg_p
     }
 
-    public static func generateIdentityV3(startOfInterval: Int, qrCodePayload: Bytes) -> Bytes? {
+    public static func generateIdentity(startOfInterval: Int, qrCodePayload: Bytes) -> Bytes? {
         guard let (noncePreId, nonceTimekey, _) = CryptoUtilsBase.getNoncesAndNotificationKey(qrCodePayload: qrCodePayload) else {
             return nil
         }
@@ -200,14 +268,6 @@ final class CryptoUtils {
         }
 
         return crypto_hash_sha256(input: DomainKeys.id.bytes + preid + intervalLength.bytes + intervalStart.bytes + timekey)
-    }
-
-    private static func generateIdentityV2(hour: Int, venueInfo: VenueInfo) -> Bytes? {
-        guard let venueBytes = venueInfo.toBytes(), let hash1 = crypto_hash_sha256(input: venueBytes + venueInfo.noncePreId) else {
-            return nil
-        }
-
-        return crypto_hash_sha256(input: hash1 + venueInfo.nonceTimekey + "\(hour)".bytes)
     }
 
     private static func crypto_secretbox_easy(secretKey: Bytes, message: Bytes, nonce: Bytes) -> Bytes? {
@@ -277,5 +337,16 @@ final class CryptoUtils {
         mclBnG2_setStr(&baseG2, baseString, baseString.count, 10)
 
         return baseG2
+    }
+
+    private static func binToBase64(bytes: Bytes) -> String? {
+        let b64BytesLength = sodium_base64_encoded_len(bytes.count, sodium_base64_VARIANT_URLSAFE_NO_PADDING)
+        var b64Bytes = Bytes(count: b64BytesLength).map(Int8.init)
+
+        guard sodium_bin2base64(&b64Bytes, b64BytesLength, bytes, bytes.count, sodium_base64_VARIANT_URLSAFE_NO_PADDING) != nil else {
+            return nil
+        }
+
+        return String(validatingUTF8: b64Bytes)
     }
 }

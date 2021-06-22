@@ -16,7 +16,7 @@ public extension Date {
     }
 
     init(millisecondsSince1970: Int) {
-        self.init(timeIntervalSince1970: TimeInterval(Double(millisecondsSince1970) / 1000.0))
+        self.init(timeIntervalSince1970: TimeInterval(millisecondsSince1970) / 1000)
     }
 
     var daysSince1970: Int {
