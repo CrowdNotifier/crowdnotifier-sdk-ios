@@ -14,7 +14,7 @@ private var instance: CrowdNotifierBaseMain!
 
 public enum CrowdNotifierBase {
     /// The current version of the SDK
-    public static let frameworkVersion: String = "1.0"
+    public static let frameworkVersion: String = "4.0"
 
     public static func initialize() {
         precondition(instance == nil, "CrowdNotifierSDK already initialized")

@@ -16,4 +16,5 @@ public enum CrowdNotifierError: Error, Equatable {
     case validFromError // scanned before from date
     case validToError // scanned after to date
     case invalidQRCodeVersion
+    case qrCodeGenerationError
 }

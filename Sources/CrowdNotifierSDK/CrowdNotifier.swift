@@ -17,7 +17,7 @@ private var instance: CrowdNotifierMain!
 
 public enum CrowdNotifier {
     /// The current version of the SDK
-    public static let frameworkVersion: String = "1.0"
+    public static let frameworkVersion: String = CrowdNotifierBase.frameworkVersion
 
     public static func initialize() {
         precondition(instance == nil, "CrowdNotifierSDK already initialized")
@@ -40,9 +40,29 @@ public enum CrowdNotifier {
         return instance.updateCheckin(checkinId: checkinId, venueInfo: venueInfo, newArrivalTime: newArrivalTime, newDepartureTime: newDepartureTime)
     }
 
-    public static func checkForMatches(problematicEventInfos: [ProblematicEventInfo]) -> [ExposureEvent] {
+    public static func removeCheckin(with checkinId: String) {
         instancePrecondition()
-        return instance.checkForMatches(problematicEventInfos: problematicEventInfos)
+        instance.removeCheckin(with: checkinId)
+    }
+
+    public static func hasCheckins() -> Bool {
+        instancePrecondition()
+        return instance.hasCheckins()
+    }
+
+    public static func checkForMatches(problematicEventInfos: [ProblematicEventInfo], requiredOverlap: TimeInterval = 0) -> [ExposureEvent] {
+        instancePrecondition()
+        return instance.checkForMatches(problematicEventInfos: problematicEventInfos, requiredOverlap: requiredOverlap)
+    }
+
+    public static func generateQRCodeString(baseUrl: String, masterPublicKey: Bytes, description: String, address: String, startTimestamp: Date, endTimestamp: Date, countryData: Data?) -> Result<(VenueInfo, String), CrowdNotifierError> {
+        instancePrecondition()
+        return instance.generateQRCodeString(baseUrl: baseUrl, masterPublicKey: masterPublicKey, description: description, address: address, startTimestamp: startTimestamp, endTimestamp: endTimestamp, countryData: countryData)
+    }
+
+    public static func generateUserUploadInfo(venueInfo: VenueInfo, arrivalTime: Date, departureTime: Date) -> [UserUploadInfo] {
+        instancePrecondition()
+        return instance.generateUserUploadInfo(venueInfo: venueInfo, arrivalTime: arrivalTime, departureTime: departureTime)
     }
 
     public static func getExposureEvents() -> [ExposureEvent] {
